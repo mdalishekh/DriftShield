@@ -1,1 +1,1 @@
-![Alt Text](./project-blueprint.png)
+![Alt Text](./flowcharts/project-blueprint.png)
