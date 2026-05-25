@@ -1,9 +1,4 @@
-# prediction.py mein
-import sys
-sys.path.append('.')
-from src.models.load_models import model, scaler
-# from src.models.load_models import model, scaler
-# from .load_models import model, scaler
+from .load_models import model, scaler
 import pandas as pd
 
 
@@ -20,7 +15,7 @@ EMPLOYMENT_MAP = {
 def predict_default(data: dict):
     
     # Convert employed
-    employed = 1 if data['employed'].lower() == 'yes' else 0
+    employed = 1 if data['employed'] == True else 0
     
     # Convert employment_type
     employment_type = EMPLOYMENT_MAP[data['employment_type']]
@@ -55,20 +50,3 @@ def predict_default(data: dict):
         "probability": f"{round(float(probability) * 100, 2)}%"
     }
     
-
-
-sample = {
-    "age": 35,
-    "income": 50000,
-    "credit_score": 720,
-    "existing_loans": 1,
-    "existing_loan_emi": 8000,
-    "employed": "Yes",
-    "loan_amount": 300000,
-    "loan_tenure_months": 24,
-    "emi_to_income_ratio": 0.16,
-    "loan_to_income_ratio": 6.0,
-    "employment_type": "Salaried"
-}
-
-print(predict_default(sample))    

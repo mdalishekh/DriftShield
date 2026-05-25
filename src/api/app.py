@@ -13,22 +13,23 @@ def health_check():
     return Response(content="Application is running", media_type="text/plain")
 
 
-@app.get("/predict")
-def predict():
-    sample = {
-    "age": 56,
-    "income": 45000,
-    "credit_score": 580,
-    "existing_loans": 1,
-    "existing_loan_emi": 4500,
-    "employed": "Yes",
-    "loan_amount": 500000,
-    "loan_tenure_months": 12,
-    "emi_to_income_ratio": 0.8,
-    "loan_to_income_ratio": 10.0,
-    "employment_type": "Salaried"
-}
-    result = predict_default(sample)
+@app.post("/predict")
+def predict(data: dict):
+    user = data
+#     sample = {
+#     "age": 56,
+#     "income": 45000,
+#     "credit_score": 580,
+#     "existing_loans": 1,
+#     "existing_loan_emi": 4500,
+#     "employed": True,
+#     "loan_amount": 500000,
+#     "loan_tenure_months": 12,
+#     "emi_to_income_ratio": 0.8,
+#     "loan_to_income_ratio": 10.0,
+#     "employment_type": "Salaried"
+# }
+    result = predict_default(data)
     return {
         "status": "success",
         "prediction": result
