@@ -23,10 +23,8 @@ class Prediction(Base):
     emi_to_income_ratio = Column(Float, nullable=False)
     loan_to_income_ratio = Column(Float, nullable=False)
     employment_type = Column(String, nullable=False)
-    
     # Output
     predicted_default = Column(Boolean, nullable=False)
     probability = Column(Float, nullable=False)
-    
     # Meta
     timestamp = Column(DateTime, default=datetime.now)
