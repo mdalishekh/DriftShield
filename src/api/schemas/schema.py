@@ -18,7 +18,7 @@ class PredictionRequest(BaseModel):
     ]
 
 class PredictionData(BaseModel):
-    default: int
+    default: bool
     probability: str
 
 class PredictionResponse(BaseModel):
