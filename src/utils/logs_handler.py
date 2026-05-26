@@ -1,5 +1,3 @@
-# src/utils/logs_handler.py
-
 import logging
 import sys
 from pathlib import Path

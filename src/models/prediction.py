@@ -44,9 +44,10 @@ def predict_default(data: dict):
     input_scaled = scaler.transform(input_df)
     prediction = model.predict(input_scaled)[0]
     probability = model.predict_proba(input_scaled)[0][1]
+    predicted_label = True if prediction == 1 else False
     
     return {
-        "default": int(prediction),
+        "default": predicted_label,
         "probability": f"{round(float(probability) * 100, 2)}%"
     }
     
