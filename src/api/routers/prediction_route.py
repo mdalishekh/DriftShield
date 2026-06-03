@@ -1,4 +1,3 @@
-from cv2 import log
 from fastapi import APIRouter, Response
 from src.models.prediction import predict_default
 from src.utils.logs_handler import logger

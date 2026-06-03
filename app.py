@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Response
-from .routers import prediction_route
+from src.api.routers import prediction_route
 from src.utils.logs_handler import logger
 from src.models.load_models import model, scaler
 from datetime import datetime
