@@ -4,6 +4,7 @@ from src.utils.logs_handler import logger
 from src.api.schemas.schema import PredictionRequest, PredictionResponse
 from src.database.connection import db_connect
 from src.database.db_ops import insert_prediction
+from src.llm.llm_services import generate_loan_assessment
 
 router = APIRouter(prefix="/prediction", tags=["Predictions"])
 
@@ -28,7 +29,10 @@ def predict(data: PredictionRequest):
         
         logger.info("Prediction inserted into database successfully")
         
+    llm_response = generate_loan_assessment(result, data.model_dump())    
+        
     return PredictionResponse(
         status="success",
-        prediction=result # type: ignore
+        prediction=result, # type: ignore
+        response=llm_response
     )

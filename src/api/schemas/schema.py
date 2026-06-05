@@ -19,8 +19,9 @@ class PredictionRequest(BaseModel):
 
 class PredictionData(BaseModel):
     default: bool
-    probability: str
+    probability: float
 
 class PredictionResponse(BaseModel):
     status: str
     prediction: PredictionData
+    response: str
