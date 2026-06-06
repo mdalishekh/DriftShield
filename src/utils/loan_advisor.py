@@ -219,3 +219,6 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
 #     loan_to_income_ratio = loan_amount / income if income > 0 else 0
     
 #     return round(emi_to_income_ratio, 4), round(loan_to_income_ratio, 4)
+
+
+

@@ -45,7 +45,7 @@ Response Style:
 - Easy for non-technical users to understand
 
 Length Requirements:
-- Minimum 15 words.
+- Minimum 20 words.
 - Maximum 35 words.
 - Prefer 1-2 concise sentences.
 
@@ -62,25 +62,6 @@ Hello! Based on my analysis, I believe that you might default because your finan
 
 Your only task is to transform the provided structured risk information into a concise, professional explanation.
 """
-
-
-# def loan_advisor_prompt(
-#     default: int, 
-#     probability: float, 
-#     risk_factors: list, 
-#     positive_factors: list
-#     )-> str:
-    
-#     # {
-#     #     # "default": predicted_result["default"],
-#     #     # "probability": predicted_result["probability"],
-#     #     # "risk_factors": risk_factors,
-#     #     # "positive_factors": positive_factors,
-#     # }
-    
-#     prompt = f""" """
-    
-#     return prompt
 
 
 def loan_advisor_prompt(

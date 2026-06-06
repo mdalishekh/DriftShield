@@ -14,7 +14,8 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     analysis_result = risk_calculation(predicted_result, payload)
 
     # Step 2: Create prompt for LLM
-    system_prompt = LOAN_ADVISOR_CONTEXT
+    # system_prompt = LOAN_ADVISOR_CONTEXT
+    
     user_prompt = loan_advisor_prompt(
         default=predicted_result["default"],
         probability=float(predicted_result["probability"]) , # / 100
@@ -25,7 +26,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     # Step 3: Generate response from LLM
     groq_client = GroqClient()
     assessment = groq_client.generate_response(
-        system_prompt=system_prompt,
+        system_prompt=LOAN_ADVISOR_CONTEXT,
         user_prompt=user_prompt,
     )
 
