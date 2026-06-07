@@ -53,7 +53,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         risk_factors.append(
             {
                 "factor": "High EMI Burden",
-                "value": round(emi_to_income_ratio, 4),
+                "value": f"{emi_to_income_ratio * 100:.2f}%",
             }
         )
 
@@ -61,7 +61,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         risk_factors.append(
             {
                 "factor": "Moderate EMI Burden",
-                "value": round(emi_to_income_ratio, 4),
+                "value": f"{emi_to_income_ratio * 100:.2f}%",
             }
         )
 
@@ -69,7 +69,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         positive_factors.append(
             {
                 "factor": "Manageable EMI Burden",
-                "value": round(emi_to_income_ratio, 4),
+                "value": f"{emi_to_income_ratio * 100:.2f}%",
             }
         )
 
@@ -80,7 +80,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         risk_factors.append(
             {
                 "factor": "High Loan-To-Income Ratio",
-                "value": round(loan_to_income_ratio, 4),
+                "value": f"{loan_to_income_ratio:.2f}x monthly income",
             }
         )
 
@@ -88,7 +88,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         risk_factors.append(
             {
                 "factor": "Moderate Loan-To-Income Ratio",
-                "value": round(loan_to_income_ratio, 4),
+                "value": f"{loan_to_income_ratio:.2f}x monthly income",
             }
         )
 
@@ -96,7 +96,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         positive_factors.append(
             {
                 "factor": "Healthy Loan-To-Income Ratio",
-                "value": round(loan_to_income_ratio, 4),
+                "value": f"{loan_to_income_ratio:.2f}x monthly income",
             }
         )
 
@@ -150,7 +150,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
                 "factor": "Variable Income Stability",
                 "value": {
                     "employment_type": employment_type,
-                    "income": income,
+                    "income": f"₹ {income:,}",
                 },
             }
         )
@@ -164,7 +164,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
                 "factor": "Variable Income Stability",
                 "value": {
                     "employment_type": employment_type,
-                    "income": income,
+                    "income": f"₹ {income:,}",
                 },
             }
         )
@@ -319,9 +319,6 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
         best_candidate["suggested_tenure"] = next_tenure
         best_candidate["predicted_probability"] = improved_probability
 
-    logger.info(
-        f"Smart suggestion generated: "
-        f"{best_candidate}"
-    )
+    logger.info(f"Smart suggestion generated: "f"{best_candidate}")
 
     return best_candidate

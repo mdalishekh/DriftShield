@@ -19,7 +19,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     # Creating user prompt for LLM with all the necessary information
     user_prompt = loan_advisor_prompt(
         default=predicted_result["default"],
-        probability=float(predicted_result["probability"]) , # / 100
+        probability=round(float(predicted_result["probability"])*100, 2),
         risk_factors=analysis_result["risk_factors"],
         positive_factors=analysis_result["positive_factors"],
         loan_suggestion=loan_suggestion
