@@ -48,6 +48,6 @@ def predict_default(data: dict):
     
     return {
         "default": predicted_label,
-        "probability": f"{round(float(probability) * 100, 2)}"
+        "probability": round(float(probability), 2)
     }
     

@@ -10,8 +10,8 @@ class PredictionRequest(BaseModel):
     employed: bool
     loan_amount: int = Field(..., gt=0)
     loan_tenure_months: int = Field(..., gt=0)
-    emi_to_income_ratio: float = Field(..., ge=0)
-    loan_to_income_ratio: float = Field(..., ge=0)
+    # emi_to_income_ratio: float = Field(..., ge=0)
+    # loan_to_income_ratio: float = Field(..., ge=0)
     employment_type: Literal[
         "Entrepreneur", "Gig Worker", "Government",
         "Retired", "Salaried", "Self-Employed"

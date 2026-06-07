@@ -45,9 +45,9 @@ Response Style:
 - Easy for non-technical users to understand
 
 Length Requirements:
-- Minimum 20 words.
-- Maximum 35 words.
-- Prefer 1-2 concise sentences.
+- Minimum 50 words.
+- Maximum 70 words.
+- Prefer sentences.
 
 If a suggested loan amount is available:
 - Mention it naturally.
@@ -64,11 +64,88 @@ Your only task is to transform the provided structured risk information into a c
 """
 
 
+# def loan_advisor_prompt(
+#     default: bool,
+#     probability: float,
+#     risk_factors: list,
+#     positive_factors: list,
+#     loan_suggestion: dict|None = None
+# ) -> str:
+
+#     risk_text = "\n".join(
+#         [
+#             f"- {factor['factor']}: {factor['value']}"
+#             for factor in risk_factors
+#         ]
+#     ) if risk_factors else "None"
+
+#     positive_text = "\n".join(
+#         [
+#             f"- {factor['factor']}: {factor['value']}"
+#             for factor in positive_factors
+#         ]
+#     ) if positive_factors else "None"
+
+#     # probability_percent = round(probability * 100, 2)
+
+#     prompt = f"""
+# You are a senior banking loan risk analyst with expertise in credit underwriting and retail lending.
+
+# Your task is to analyze the provided prediction result, risk indicators, and positive financial indicators, then generate a concise professional assessment.
+
+# Prediction Result:
+# - Default Risk: {default}
+# - Default Probability: {probability}%
+
+# Identified Risk Factors:
+# {risk_text}
+
+# Identified Positive Factors:
+# {positive_text}
+
+# Instructions:
+
+# 1. Carefully consider BOTH risk factors and positive factors before forming a conclusion.
+# 2. Use the provided values when relevant. For example, if the credit score is low, mention the score. If an EMI burden or loan-to-income ratio is high, mention the value naturally.
+# 3. If default risk is True:
+#    - Explain the major reasons contributing to elevated repayment risk.
+#    - Mention important strengths only if they materially offset the risk.
+#    - End with a professional risk-oriented conclusion.
+
+# 4. If default risk is False:
+#    - Focus primarily on strengths and financial stability indicators.
+#    - Mention minor concerns only if necessary.
+#    - End with a positive conclusion regarding repayment capacity.
+
+# 5. Write like a professional banking analyst, not an AI assistant.
+
+# 6. Do NOT use:
+#    - bullet points
+#    - markdown
+#    - headings
+#    - JSON
+#    - lists
+#    - special formatting
+
+# 7. Return ONLY a single plain-text paragraph.
+
+# 8. Keep the response between 35 and 50 words.
+
+# Generate the assessment.
+# """
+
+#     return prompt
+
+
+
+
+
 def loan_advisor_prompt(
     default: bool,
     probability: float,
     risk_factors: list,
-    positive_factors: list
+    positive_factors: list,
+    loan_suggestion: dict | None = None
 ) -> str:
 
     risk_text = "\n".join(
@@ -85,52 +162,76 @@ def loan_advisor_prompt(
         ]
     ) if positive_factors else "None"
 
-    # probability_percent = round(probability * 100, 2)
+    suggestion_text = ""
+
+    if loan_suggestion:
+
+        suggestion_text = f"""
+Suggested Lower-Risk Loan Configuration:
+- Suggested Loan Amount: {loan_suggestion['suggested_loan_amount']}
+- Suggested Tenure: {loan_suggestion['suggested_tenure']} months
+- Predicted Default Probability: {round(loan_suggestion['predicted_probability'] * 100, 2)}%
+"""
 
     prompt = f"""
-You are a senior banking loan risk analyst with expertise in credit underwriting and retail lending.
+You are a senior banking loan risk analyst specializing in retail lending, credit risk assessment, and loan underwriting.
 
-Your task is to analyze the provided prediction result, risk indicators, and positive financial indicators, then generate a concise professional assessment.
+Your task is to review the prediction outcome, risk indicators, positive indicators, and any available safer loan recommendation, then generate a concise professional assessment suitable for banking customers.
 
-Prediction Result:
-- Default Risk: {default}
-- Default Probability: {probability}%
+Prediction Summary:
+- Predicted Default Risk: {default}
+- Predicted Default Probability: {round(probability * 100, 2)}%
 
-Identified Risk Factors:
+Risk Factors:
 {risk_text}
 
-Identified Positive Factors:
+Positive Factors:
 {positive_text}
+
+{suggestion_text}
 
 Instructions:
 
-1. Carefully consider BOTH risk factors and positive factors before forming a conclusion.
-2. Use the provided values when relevant. For example, if the credit score is low, mention the score. If an EMI burden or loan-to-income ratio is high, mention the value naturally.
-3. If default risk is True:
-   - Explain the major reasons contributing to elevated repayment risk.
-   - Mention important strengths only if they materially offset the risk.
-   - End with a professional risk-oriented conclusion.
+1. Carefully evaluate both risk factors and positive factors before reaching a conclusion.
 
-4. If default risk is False:
-   - Focus primarily on strengths and financial stability indicators.
-   - Mention minor concerns only if necessary.
-   - End with a positive conclusion regarding repayment capacity.
+2. Use numerical values naturally when they strengthen the explanation. Examples include:
+   - Credit Score
+   - EMI-to-Income Ratio
+   - Loan-to-Income Ratio
+   - Income
+   - Loan Amount
 
-5. Write like a professional banking analyst, not an AI assistant.
+3. If repayment risk appears elevated:
+   - Focus primarily on the major contributors to risk.
+   - Mention strengths only when they meaningfully offset concerns.
+   - Explain why repayment pressure may exist.
 
-6. Do NOT use:
-   - bullet points
-   - markdown
-   - headings
-   - JSON
-   - lists
-   - special formatting
+4. If repayment risk appears manageable:
+   - Focus primarily on strengths and repayment capacity.
+   - Briefly acknowledge any minor concerns if relevant.
 
-7. Return ONLY a single plain-text paragraph.
+5. If a suggested lower-risk loan configuration is provided:
+   - Mention it naturally.
+   - Explain that the alternative configuration may improve repayment feasibility.
+   - Do not guarantee approval.
 
-8. Keep the response between 35 and 50 words.
+6. Write like an experienced banking analyst.
 
-Generate the assessment.
+7. Do NOT:
+   - Use markdown
+   - Use bullet points
+   - Use headings
+   - Use JSON
+   - Use numbered lists
+   - Mention AI, machine learning, models, algorithms, prompts, probabilities being calculated, or technical implementation details
+
+8. Return ONLY a single plain-text paragraph.
+
+9. Keep the response between 50 and 90 words.
+
+10. Vary sentence structure naturally and avoid repetitive templates.
+
+Generate the final assessment.
 """
 
     return prompt
