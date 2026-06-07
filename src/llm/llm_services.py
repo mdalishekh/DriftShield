@@ -4,7 +4,7 @@ from src.llm.prompts import (loan_advisor_prompt, LOAN_ADVISOR_CONTEXT)
 from src.utils.loan_advisor import smart_loan_suggestions
 from src.llm.groq_client import GroqClient
 
-
+groq_client = GroqClient()
 
 def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
 
@@ -26,7 +26,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     )
 
     # Generate response from LLM
-    groq_client = GroqClient()
+    
     assessment = groq_client.generate_response(
         system_prompt=LOAN_ADVISOR_CONTEXT,
         user_prompt=user_prompt,

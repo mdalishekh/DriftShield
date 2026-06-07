@@ -3,9 +3,7 @@ from src.models.prediction import predict_default
 
 def risk_calculation(predicted_result: dict, payload: dict) -> dict:
 
-    logger.info(
-        "Calculating risk and positive factors based on prediction result and input data"
-    )
+    logger.info("Calculating risk and positive factors based on prediction result and input data")
 
     risk_factors: list[dict] = []
     positive_factors: list[dict] = []
@@ -203,7 +201,13 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
     
 # Calculate emi_to_income_ratio loan_to_income_ratio
 
-def ratio_calculation(payload: dict):            
+def ratio_calculation(payload: dict): 
+    """
+    Calculates EMI and loan ratios,
+    updates payload in-place,
+    and returns updated payload.
+    """
+               
     income = payload["income"]
     existing_loan_emi = payload["existing_loan_emi"]
     loan_amount = payload["loan_amount"]
@@ -211,8 +215,13 @@ def ratio_calculation(payload: dict):
     # Calculate ratios with safe division
     emi_to_income_ratio = round(existing_loan_emi / income if income > 0 else 0, 4)
     loan_to_income_ratio = round(loan_amount / income if income > 0 else 0, 4)
+    
+    payload.update({
+        "emi_to_income_ratio": emi_to_income_ratio,
+        "loan_to_income_ratio": loan_to_income_ratio
+    })
 
-    return emi_to_income_ratio, loan_to_income_ratio
+    return payload
 
 
 # Smart loan suggestions based on risk and positive factors
@@ -248,12 +257,9 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
         candidate_amount = int(requested_amount * factor)
         candidate_payload["loan_amount"] = (candidate_amount)
 
-        # Recalculating ratios for candidate payload
-        emi_ratio, loan_ratio = ratio_calculation(candidate_payload)
+        # Recalculating ratios and updating payload for candidate payload
+        candidate_payload = ratio_calculation(candidate_payload)
         
-        # Updated candidate payload with new ratios
-        candidate_payload["emi_to_income_ratio"] = emi_ratio
-        candidate_payload["loan_to_income_ratio"] = loan_ratio
 
         # Getting prediction for candidate payload
         prediction = predict_default(candidate_payload)
@@ -301,12 +307,8 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
     candidate_payload["loan_amount"] = best_candidate["suggested_loan_amount"]
     candidate_payload["loan_tenure_months"] = next_tenure
     
-    # Recalculating ratios for candidate payload with updated tenure 
-    emi_ratio, loan_ratio = ratio_calculation(candidate_payload)
-    
-
-    candidate_payload["emi_to_income_ratio"] = emi_ratio
-    candidate_payload["loan_to_income_ratio"] = loan_ratio
+     # Recalculating ratios and updating payload for candidate payload with updated tenure 
+    candidate_payload = ratio_calculation(candidate_payload)
 
     # Getting prediction for candidate payload with improved tenure
     prediction = predict_default(candidate_payload)
