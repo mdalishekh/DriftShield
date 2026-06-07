@@ -19,10 +19,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
     emi_to_income_ratio = payload["emi_to_income_ratio"]
     loan_to_income_ratio = payload["loan_to_income_ratio"]
 
-    # ==================================
-    # Credit Score Analysis
-    # ==================================
 
+    # Credit Score Analysis
+    
     if credit_score < 600:
         risk_factors.append(
             {
@@ -47,10 +46,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             }
         )
 
-    # ==================================
+    
     # EMI Burden Analysis
-    # ==================================
-
+    
     if emi_to_income_ratio >= 0.45:
         risk_factors.append(
             {
@@ -75,10 +73,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             }
         )
 
-    # ==================================
+    
     # Loan To Income Ratio Analysis
-    # ==================================
-
+    
     if loan_to_income_ratio >= 7:
         risk_factors.append(
             {
@@ -103,10 +100,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             }
         )
 
-    # ==================================
+    
     # Existing Loans Analysis
-    # ==================================
-
+    
     if existing_loans >= 4:
         risk_factors.append(
             {
@@ -123,10 +119,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             }
         )
 
-    # ==================================
+    
     # Employment Status Analysis
-    # ==================================
-
+    
     if not employed:
         risk_factors.append(
             {
@@ -143,10 +138,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             }
         )
 
-    # ==================================
+    
     # Employment Stability Analysis
-    # ==================================
-
+    
     if (
         employment_type == "Gig Worker"
         and income < 25000
@@ -175,10 +169,9 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             }
         )
 
-    # ==================================
+    
     # Positive Employment Profiles
-    # ==================================
-
+    
     if employment_type == "Government":
         positive_factors.append(
             {
@@ -208,54 +201,37 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
     }
     
     
-    
-    
-            
-# calculate emi_to_income_ratio loan_to_income_ratio
+# Calculate emi_to_income_ratio loan_to_income_ratio
+
 def ratio_calculation(payload: dict):            
     income = payload["income"]
     existing_loan_emi = payload["existing_loan_emi"]
     loan_amount = payload["loan_amount"]
 
-    emi_to_income_ratio = existing_loan_emi / income if income > 0 else 0
-    loan_to_income_ratio = loan_amount / income if income > 0 else 0
-    
-    return round(emi_to_income_ratio, 4), round(loan_to_income_ratio, 4)
+    # Calculate ratios with safe division
+    emi_to_income_ratio = round(existing_loan_emi / income if income > 0 else 0, 4)
+    loan_to_income_ratio = round(loan_amount / income if income > 0 else 0, 4)
 
-
-
-
+    return emi_to_income_ratio, loan_to_income_ratio
 
 
 # Smart loan suggestions based on risk and positive factors
+def smart_loan_suggestions(predicted_result: dict, payload: dict):
 
+    TARGET_PROBABILITY = 0.40
 
-
-TARGET_PROBABILITY = 0.40
-
-REDUCTION_FACTORS = [
-    0.85,
-    0.70,
-    0.55,
-    0.50
-]
-
-
-def smart_loan_suggestions(
-    predicted_result: dict,
-    payload: dict
-):
-
-    logger.info(
-        "Starting smart loan suggestion process"
-    )
+    REDUCTION_FACTORS = [
+        0.85,
+        0.70,
+        0.55,
+        0.50
+    ]
+    
+    logger.info("Starting smart loan suggestion started")
 
     if not predicted_result["default"]:
 
-        logger.info(
-            "Customer already falls under acceptable risk threshold"
-        )
-
+        logger.info("Customer already falls under acceptable risk threshold")
         return None
 
     requested_amount = payload["loan_amount"]
@@ -263,37 +239,24 @@ def smart_loan_suggestions(
 
     best_candidate = None
 
-    # ------------------------------
-    # STEP 1
     # Find safe amount on current tenure
-    # ------------------------------
 
     for factor in REDUCTION_FACTORS:
 
         candidate_payload = payload.copy()
 
-        candidate_amount = int(
-            requested_amount * factor
-        )
+        candidate_amount = int(requested_amount * factor)
+        candidate_payload["loan_amount"] = (candidate_amount)
 
-        candidate_payload["loan_amount"] = (
-            candidate_amount
-        )
-
-        emi_ratio, loan_ratio = (
-            ratio_calculation(
-                candidate_payload
-            )
-        )
-
-        candidate_payload[
-            "emi_to_income_ratio"
-        ] = emi_ratio
-
+        # Recalculating ratios for candidate payload
+        emi_ratio, loan_ratio = ratio_calculation(candidate_payload)
+        
+        # Updated candidate payload with new ratios
+        candidate_payload["emi_to_income_ratio"] = emi_ratio
         candidate_payload["loan_to_income_ratio"] = loan_ratio
 
+        # Getting prediction for candidate payload
         prediction = predict_default(candidate_payload)
-
         probability = prediction["probability"]
 
         logger.info(
@@ -305,96 +268,56 @@ def smart_loan_suggestions(
         if probability <= TARGET_PROBABILITY:
 
             best_candidate = {
-                "suggested_loan_amount":
-                    candidate_amount,
-
-                "suggested_tenure":
-                    current_tenure,
-
-                "predicted_probability":
-                    probability,
+                "suggested_loan_amount": candidate_amount,
+                "suggested_tenure": current_tenure,
+                "predicted_probability":probability,
             }
 
             break
 
     if best_candidate is None:
-
-        logger.warning(
-            "No safe loan amount found"
-        )
-
+        logger.warning("No safe loan amount found")
         return None
 
-    # ------------------------------
-    # STEP 2
+
     # One tenure improvement check
-    # ------------------------------
 
     next_tenure = None
-
+    # Define next tenure options based on current tenure
     if current_tenure == 12:
-        next_tenure = 24
-
+        next_tenure = 18
     elif current_tenure == 18:
-        next_tenure = 30
-
+        next_tenure = 24
     elif current_tenure == 24:
-        next_tenure = 36
+        next_tenure = 30
+    elif current_tenure == 30:
+        next_tenure = 36    
 
     if next_tenure is None:
-
         return best_candidate
 
+    # Evaluate if longer tenure can further reduce risk
     candidate_payload = payload.copy()
+    candidate_payload["loan_amount"] = best_candidate["suggested_loan_amount"]
+    candidate_payload["loan_tenure_months"] = next_tenure
+    
+    # Recalculating ratios for candidate payload with updated tenure 
+    emi_ratio, loan_ratio = ratio_calculation(candidate_payload)
+    
 
-    candidate_payload["loan_amount"] = (
-        best_candidate[
-            "suggested_loan_amount"
-        ]
-    )
+    candidate_payload["emi_to_income_ratio"] = emi_ratio
+    candidate_payload["loan_to_income_ratio"] = loan_ratio
 
-    candidate_payload["loan_tenure_months"] = (
-        next_tenure
-    )
+    # Getting prediction for candidate payload with improved tenure
+    prediction = predict_default(candidate_payload)
 
-    emi_ratio, loan_ratio = (
-        ratio_calculation(
-            candidate_payload
-        )
-    )
+    improved_probability = prediction["probability"]
 
-    candidate_payload[
-        "emi_to_income_ratio"
-    ] = emi_ratio
-
-    candidate_payload[
-        "loan_to_income_ratio"
-    ] = loan_ratio
-
-    prediction = predict_default(
-        candidate_payload
-    )
-
-    improved_probability = prediction[
-        "probability"
-    ]
-
-    if (
-        improved_probability
-        < best_candidate[
-            "predicted_probability"
-        ]
-    ):
+    if (improved_probability < best_candidate["predicted_probability"]):
 
         logger.info("Longer tenure produced lower risk")
-
-        best_candidate[
-            "suggested_tenure"
-        ] = next_tenure
-
-        best_candidate[
-            "predicted_probability"
-        ] = improved_probability
+        best_candidate["suggested_tenure"] = next_tenure
+        best_candidate["predicted_probability"] = improved_probability
 
     logger.info(
         f"Smart suggestion generated: "

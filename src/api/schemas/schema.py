@@ -24,4 +24,4 @@ class PredictionData(BaseModel):
 class PredictionResponse(BaseModel):
     status: str
     prediction: PredictionData
-    response: str
+    llm_response: str

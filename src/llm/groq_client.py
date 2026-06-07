@@ -11,7 +11,7 @@ class GroqClient:
     - Send prompts
     - Return text response
 
-    It should NOT contain:
+    It does NOT contain:
     - Loan logic
     - Drift logic
     - Business rules

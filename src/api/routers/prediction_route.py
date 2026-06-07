@@ -23,25 +23,36 @@ def predict(data: PredictionRequest):
         "loan_to_income_ratio": loan_ratio
     })
 
+    # Get prediction result from the model
     result = predict_default(payload)
-    
-    logger.info(f"Prediction result: {result}")
-    
+        
+    # Datebase connection and insertion
     with db_connect() as db:
         logger.info("Inserting prediction into database")
-        insert_prediction(
-            db=db,
-            input_data=payload,
-            predicted_default=result["default"],
-            probability= float(result["probability"])
-        )
         
-        logger.info("Prediction inserted into database successfully")
+        try:
+            insert_prediction(
+                db=db,
+                input_data=payload,
+                predicted_default=result["default"],
+                probability= float(result["probability"])
+            )
+            logger.info("Prediction inserted into database successfully")
+        except Exception as e:
+            logger.error(f"Error inserting prediction into database: {e}")
         
-    llm_response = generate_loan_assessment(result, payload)    
-    result.update({"proabability": float(result["probability"]*100)})
+    # generate LLM response for loan assessment    
+    try:    
+        llm_response = generate_loan_assessment(result, payload)   
+    except Exception as e:
+        logger.error(f"Error generating LLM response: {e}")
+        llm_response = "Could not generate loan assessment at this time."
+    
+    # Convert probability to percentage and round to 2 decimal places         
+    result.update({"probability": round(float(result["probability"]*100), 2)})
+    
     return PredictionResponse(
         status="success",
         prediction=result, # type: ignore
-        response=llm_response
+        llm_response=llm_response
     )

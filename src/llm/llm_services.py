@@ -6,20 +6,17 @@ from src.llm.groq_client import GroqClient
 
 
 
-
 def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
 
     logger.info("Generating loan assessment using LLM")
 
-    # Step 1: Calculate risk and positive factors
+    # Calculate risk and positive factors
     analysis_result = risk_calculation(predicted_result, payload)
     
+    # Generate smart loan suggestions based on risk and positive factors
     loan_suggestion = smart_loan_suggestions(predicted_result, payload)
     
-
-    # Step 2: Create prompt for LLM
-    # system_prompt = LOAN_ADVISOR_CONTEXT
-    
+    # Creating user prompt for LLM with all the necessary information
     user_prompt = loan_advisor_prompt(
         default=predicted_result["default"],
         probability=float(predicted_result["probability"]) , # / 100
@@ -28,7 +25,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
         loan_suggestion=loan_suggestion
     )
 
-    # Step 3: Generate response from LLM
+    # Generate response from LLM
     groq_client = GroqClient()
     assessment = groq_client.generate_response(
         system_prompt=LOAN_ADVISOR_CONTEXT,
