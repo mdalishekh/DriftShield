@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import APIRouter, BackgroundTasks
 from src.models.prediction import predict_default
 from src.utils.logs_handler import logger

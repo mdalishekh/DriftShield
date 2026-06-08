@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Response
-from src.api.routers import prediction_route
+from src.api.routers import model_registry_route, prediction_route
 from src.utils.logs_handler import logger
 from src.models.load_models import model, scaler
 from datetime import datetime
@@ -23,5 +23,6 @@ def health_check():
     }
 
 # final endpoint will be /api/v1/predict
-app.include_router(prediction_route.router, prefix="/api/v1")    
+app.include_router(prediction_route.router, prefix="/api/v1")
+app.include_router(model_registry_route.router, prefix="/api/v1")
 
