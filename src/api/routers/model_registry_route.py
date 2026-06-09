@@ -12,8 +12,11 @@ from src.database.db_ops import (
     insert_model_metadata, 
     get_all_models,
     get_model_by_id,
-    delete_model_record
+    delete_model_record,
+    get_active_model,
+    switch_active_model
     )
+from src.models.load_models import load_model_into_memory
 from src.utils.logs_handler import logger
 
 router = APIRouter(
@@ -263,3 +266,63 @@ def delete_model(model_id: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete model."
         )
+        
+        
+        
+@router.put("/activate/{model_id}")
+def activate_model(model_id: int):
+
+    logger.info(
+        f"Activation request received for model ID: {model_id}"
+    )
+
+    try:
+
+        model_record = get_model_by_id(model_id)
+
+        if model_record is None:
+
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No model found for ID {model_id}"
+            )
+
+        if model_record.is_active:
+
+            return {
+                "status": "warning",
+                "message": "Selected model is already active."
+            }
+
+        load_model_into_memory(
+            model_name=model_record.model_name,
+            scaler_name=model_record.scaler_name
+        )
+
+        current_active_model = get_active_model()
+
+        switch_active_model(
+            current_active_id=current_active_model.id,
+            new_active_id=model_record.id
+        )
+
+        logger.info(f"Model activated successfully. ID: {model_id}")
+
+        return {
+            "status": "success",
+            "message": "Model activated successfully.",
+            "model_id": model_record.id,
+            "model_name": model_record.model_name,
+            "scaler_name": model_record.scaler_name
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.exception(f"Failed to activate model ID: {model_id}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to activate model."
+        )        

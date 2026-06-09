@@ -1,4 +1,4 @@
-from .load_models import model, scaler
+from .load_models import (get_current_model, get_current_scaler)
 import pandas as pd
 from src.utils.logs_handler import logger
 
@@ -16,7 +16,8 @@ EMPLOYMENT_MAP = {
 def predict_default(data: dict):
     
     try:
-        
+        model = get_current_model()
+        scaler = get_current_scaler()
         # Convert employed
         employed = 1 if data['employed'] == True else 0
         

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from src.database.models import Prediction, ModelRegistry
 from src.database.connection import db_connect
 from src.utils.logs_handler import logger
+from datetime import datetime
 
 
 # This function inserts Incoming user data in database
@@ -133,4 +134,75 @@ def delete_model_record(model_id: int) -> None:
         except Exception:
             db.rollback()
             logger.exception(f"Failed to delete model record for ID: {model_id}")
+            raise        
+        
+        
+
+def get_active_model() -> ModelRegistry | None:
+
+    with db_connect() as db:
+
+        logger.info("Fetching active model")
+
+        try:
+
+            active_model = (
+                db.query(ModelRegistry)
+                .filter(ModelRegistry.is_active == True)
+                .first()
+            )
+
+            if active_model:
+                logger.info(f"Active model found: {active_model.model_name}")
+                return active_model
+
+            logger.warning("No active model found in database")
+
+            return None
+
+        except Exception:
+            logger.exception("Failed to fetch active model")
+            raise        
+        
+        
+
+
+
+def switch_active_model(
+    current_active_id: int,
+    new_active_id: int
+) -> None:
+
+    with db_connect() as db:
+
+        logger.info(f"Switching active model from ID {current_active_id} to ID {new_active_id}")
+
+        try:
+
+            current_active_model = (
+                db.query(ModelRegistry)
+                .filter(ModelRegistry.id == current_active_id)
+                .first()
+            )
+
+            new_active_model = (
+                db.query(ModelRegistry)
+                .filter(ModelRegistry.id == new_active_id)
+                .first()
+            )
+
+            if current_active_model:
+                current_active_model.is_active = False
+
+            if new_active_model:
+                new_active_model.is_active = True
+                new_active_model.activated_at = datetime.now()
+
+            db.commit()
+
+            logger.info(f"Successfully activated model ID: {new_active_id}")
+
+        except Exception:
+            db.rollback()
+            logger.exception(f"Failed to switch active model to ID: {new_active_id}")
             raise        
