@@ -1,6 +1,6 @@
 # src/database/db_ops.py
 from sqlalchemy.orm import Session
-from src.database.models import Prediction
+from src.database.models import Prediction, ModelRegistry
 from src.database.connection import db_connect
 from src.utils.logs_handler import logger
 
@@ -33,27 +33,19 @@ def get_all_predictions(db: Session):
     return db.query(Prediction).all()
 
 
-# def save_prediction_background(
-#     payload: dict,
-#     result: dict
-# ):
+
+def insert_model(**kwargs)-> ModelRegistry:
     
-#     try:
-#         with db_connect() as db:
+    with db_connect() as db:
 
-#             insert_prediction(
-#                 db=db,
-#                 payload=payload,
-#                 predicted_default=result["default"],
-#                 probability=float(result["probability"])
-#             )
+        try:
+            model_record = ModelRegistry(**kwargs)
+            db.add(model_record)
+            db.commit()
+            db.refresh(model_record)
 
-#         logger.info(
-#             "Prediction inserted into database successfully"
-#         )
+            return model_record
 
-#     except Exception as e:
-
-#         logger.error(
-#             f"Error inserting prediction into database: {e}"
-#         )
+        except Exception:
+            db.rollback()
+            raise
