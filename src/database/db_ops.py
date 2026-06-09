@@ -4,8 +4,11 @@ from src.database.models import Prediction, ModelRegistry
 from src.database.connection import db_connect
 from src.utils.logs_handler import logger
 
+
+# This function inserts Incoming user data in database
 def insert_prediction(payload: dict, predicted_default: bool, probability: float):
     
+    # Connecting with Database
     with db_connect() as db:
     
         record = Prediction(
@@ -33,19 +36,101 @@ def get_all_predictions(db: Session):
     return db.query(Prediction).all()
 
 
-
-def insert_model(**kwargs)-> ModelRegistry:
+# This functions insets Model & Metrics file's metadata in Database
+def insert_model_metadata(**kwargs)-> ModelRegistry:
     
+    # Connecting with Database
     with db_connect() as db:
-
+        logger.info("Inserting Model & Metrics metadata")
         try:
             model_record = ModelRegistry(**kwargs)
             db.add(model_record)
             db.commit()
             db.refresh(model_record)
-
+            logger.info("Model & Metrics metadata inserted successfully")
             return model_record
+
+        except Exception as e:
+            logger.exception("Failed to insert Model & Metric metadata")
+            db.rollback()
+            raise
+        
+        
+
+# This functions fetch record corresponding to the provided Row ID
+def get_model_by_id(model_id: int) -> ModelRegistry | None:
+
+    with db_connect() as db:
+
+        logger.info(f"Fetching record details for ID: {model_id}")
+
+        try:
+
+            model_record = (
+                db.query(ModelRegistry)
+                .filter(ModelRegistry.id == model_id)
+                .first()
+            )
+
+            if model_record:
+                logger.info(f"Record found for ID: {model_id}")
+                return model_record
+
+            logger.warning(f"Record does not exist for ID: {model_id}")
+            return None
+
+        except Exception:
+            logger.exception(f"Failed to fetch record details for ID: {model_id}")
+            raise        
+        
+
+
+# This function extract all models record from database 
+def get_all_models() -> list[ModelRegistry]:
+
+    with db_connect() as db:
+
+        logger.info("Fetching all registered models")
+
+        try:
+
+            models = db.query(ModelRegistry).all()
+
+            logger.info(f"Successfully fetched {len(models)} model records")
+
+            return models
+
+        except Exception:
+            logger.exception("Failed to fetch model records")
+            raise        
+        
+        
+
+
+def delete_model_record(model_id: int) -> None:
+
+    with db_connect() as db:
+
+        logger.info(f"Deleting model record for ID: {model_id}")
+
+        try:
+
+            model_record = (
+                db.query(ModelRegistry)
+                .filter(ModelRegistry.id == model_id)
+                .first()
+            )
+
+            if model_record is None:
+                logger.warning(f"No model record found for ID: {model_id}")
+                return
+
+            db.delete(model_record)
+            db.commit()
+
+            logger.info(f"Model record deleted successfully for ID: {model_id}")
 
         except Exception:
             db.rollback()
-            raise
+            logger.exception(f"Failed to delete model record for ID: {model_id}")
+            raise        

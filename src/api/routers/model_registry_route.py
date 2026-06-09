@@ -8,8 +8,12 @@ from fastapi import (
     BackgroundTasks
 )
 
-from src.database.connection import db_connect
-from src.database.db_ops import insert_model
+from src.database.db_ops import (
+    insert_model_metadata, 
+    get_all_models,
+    get_model_by_id,
+    delete_model_record
+    )
 from src.utils.logs_handler import logger
 
 router = APIRouter(
@@ -18,25 +22,9 @@ router = APIRouter(
 )
 
 
-# def save_model_metadata(
-#     model_name: str,
-#     scaler_name: str,
-#     metrics_name: str
-# ) -> None:
-
-#     with db_connect() as db:
-
-#         insert_model(
-#             db=db,
-#             model_name=model_name,
-#             scaler_name=scaler_name,
-#             metrics_name=metrics_name
-#         )
-
 
 @router.post("/upload")
 async def upload_models(
-    background_tasks: BackgroundTasks,
     model_file: UploadFile = File(...),
     scaler_file: UploadFile = File(...),
     metrics_file: UploadFile = File(...)
@@ -44,9 +32,7 @@ async def upload_models(
 
     try:
 
-        # -----------------------------
         # Filename Validation
-        # -----------------------------
 
         model_filename = model_file.filename
         scaler_filename = scaler_file.filename
@@ -88,9 +74,8 @@ async def upload_models(
                 detail="Metrics file must end with '_metrics.json'."
             )
 
-        # -----------------------------
-        # Models Folder
-        # -----------------------------
+
+        # Models & Metrics Folder
 
         project_root = Path(__file__).resolve().parents[3]
 
@@ -111,9 +96,7 @@ async def upload_models(
         scaler_path = models_dir / scaler_filename
         metrics_path = metrics_dir / metrics_filename
 
-        # -----------------------------
         # Duplicate File Validation
-        # -----------------------------
 
         if model_path.exists():
             raise HTTPException(
@@ -133,10 +116,8 @@ async def upload_models(
                 detail=f"{metrics_filename} already exists."
             )
 
-        # -----------------------------
         # Save Files
-        # -----------------------------
-
+        logger.info("Uploading Model & Metric files")
         model_path.write_bytes(
             await model_file.read()
         )
@@ -149,20 +130,10 @@ async def upload_models(
             await metrics_file.read()
         )
 
-        logger.info("Model files uploaded successfully")
+        logger.info("Model & Metrics files uploaded successfully")
 
-        # -----------------------------
-        # Background DB Insert
-        # -----------------------------
-
-        # background_tasks.add_task(
-        #     insert_model,
-        #     model_name=model_filename,
-        #     scaler_name=scaler_filename,
-        #     metrics_name=metrics_filename
-        # )
         
-        insert_model(
+        insert_model_metadata(
             model_name=model_filename,
             scaler_name=scaler_filename,
             metrics_name=metrics_filename
@@ -180,9 +151,115 @@ async def upload_models(
         raise
 
     except Exception as e:
-        logger.error(f"Model upload failed: {e}")
+        logger.error(f"Model & Metrics upload failed: {e}")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to upload model files."
+        )
+        
+        
+        
+
+
+@router.get("/list")
+def get_models():
+
+    logger.info("Fetching all registered models")
+
+    try:
+
+        models = get_all_models()
+
+        return {
+            "status": "success",
+            "models": [
+                {
+                    "id": model.id,
+                    "model_name": model.model_name,
+                    "scaler_name": model.scaler_name,
+                    "metrics_name": model.metrics_name,
+                    "uploaded_at": model.uploaded_at,
+                    "activated_at": model.activated_at,
+                    "is_active": model.is_active
+                }
+                for model in models
+            ]
+        }
+
+    except Exception:
+        logger.exception("Failed to fetch registered models")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch registered models."
+        )        
+        
+
+
+
+
+
+@router.delete("/delete/{model_id}")
+def delete_model(model_id: int):
+
+    logger.info(f"Delete request received for model ID: {model_id}")
+
+    try:
+
+        model_record = get_model_by_id(model_id)
+
+        if model_record is None:
+
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No model found for ID {model_id}"
+            )
+
+        if model_record.is_active:
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Active model cannot be deleted."
+            )
+
+        project_root = Path(__file__).resolve().parents[3]
+
+        model_path = (project_root/"models"/model_record.model_name)
+
+        scaler_path = (project_root/"models"/model_record.scaler_name)
+
+        metrics_path = (project_root/"metrics"/model_record.metrics_name)
+
+        model_path.unlink()
+        scaler_path.unlink()
+        metrics_path.unlink()
+
+        logger.info(
+            f"Files deleted successfully for model ID: {model_id}"
+        )
+
+        delete_model_record(model_id)
+
+        return {
+            "status": "success",
+            "message": "Model deleted successfully.",
+            "deleted_record": {
+                "id": model_record.id,
+                "model_name": model_record.model_name,
+                "scaler_name": model_record.scaler_name,
+                "metrics_name": model_record.metrics_name,
+                "uploaded_at": model_record.uploaded_at,
+                "activated_at": model_record.activated_at,
+                "is_active": model_record.is_active
+            }
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.exception(f"Failed to delete model ID: {model_id}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete model."
         )
