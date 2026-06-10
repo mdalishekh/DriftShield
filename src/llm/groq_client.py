@@ -1,5 +1,5 @@
 from groq import Groq 
-from src.config.config import Keys
+from src.config.config import EnvVars
 
 
 class GroqClient:
@@ -19,10 +19,10 @@ class GroqClient:
 
     def __init__(self):
         self.client = Groq(
-            api_key=Keys.GROQ_API_KEY
+            api_key=EnvVars.GROQ_API_KEY
         )
 
-        self.model_name = Keys.GROQ_MODEL
+        self.model_name = EnvVars.GROQ_MODEL
 
     def generate_response(
         self,

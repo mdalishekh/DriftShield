@@ -242,9 +242,7 @@ def activate_initial_model(
 
     with db_connect() as db:
 
-        logger.info(
-            f"Activating initial model ID: {model_id}"
-        )
+        logger.info(f"Activating initial model ID: {model_id}")
 
         try:
 
@@ -256,9 +254,7 @@ def activate_initial_model(
 
             if model_record is None:
 
-                logger.warning(
-                    f"No model found for ID: {model_id}"
-                )
+                logger.warning(f"No model found for ID: {model_id}")
 
                 return
 
@@ -267,16 +263,12 @@ def activate_initial_model(
 
             db.commit()
 
-            logger.info(
-                f"Initial model activated successfully. ID: {model_id}"
-            )
+            logger.info(f"Initial model activated successfully. ID: {model_id}")
 
         except Exception:
 
             db.rollback()
 
-            logger.exception(
-                f"Failed to activate initial model ID: {model_id}"
-            )
+            logger.exception(f"Failed to activate initial model ID: {model_id}")
 
             raise        

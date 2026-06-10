@@ -3,10 +3,11 @@ from sqlalchemy.orm import sessionmaker
 from src.database.models import Base
 from contextlib import contextmanager
 from src.utils.logs_handler import logger
+from src.config.config import EnvVars
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/driftshield"
+# DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/driftshield"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(EnvVars.DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 # Tables create karo
