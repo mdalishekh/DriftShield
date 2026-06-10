@@ -23,36 +23,68 @@ async def lifespan(app: FastAPI):
         active_model = get_active_model()
 
         if active_model:
-            logger.info(f"Active model found: {active_model.model_name}")
-            load_model_into_memory(
-                model_name=active_model.model_name,
-                scaler_name=active_model.scaler_name
+
+            logger.info(
+                f"Active model found: {active_model.model_name}"
             )
+
+            try:
+
+                load_model_into_memory(
+                    model_name=active_model.model_name,
+                    scaler_name=active_model.scaler_name
+                )
+
+            except FileNotFoundError as e:
+
+                logger.warning(
+                    f"Active model files not found: {e}"
+                )
 
         else:
 
-            logger.warning("No active model found. Loading first available model.")
+            logger.warning(
+                "No active model found. Loading first available model."
+            )
 
             first_model = get_first_model()
 
             if first_model is None:
-                logger.warning("No models available in database.")
+
+                logger.warning(
+                    "No models available in database."
+                )
 
             else:
 
-                load_model_into_memory(
-                    model_name=first_model.model_name,
-                    scaler_name=first_model.scaler_name
-                )
-                
-                activate_initial_model(first_model.id)
+                try:
 
-        logger.info("Application startup completed")
+                    load_model_into_memory(
+                        model_name=first_model.model_name,
+                        scaler_name=first_model.scaler_name
+                    )
+
+                    activate_initial_model(
+                        first_model.id
+                    )
+
+                except FileNotFoundError as e:
+
+                    logger.warning(
+                        f"First model files not found: {e}"
+                    )
+
+        logger.info(
+            "Application startup completed"
+        )
 
         yield
 
     finally:
-        logger.info("Application shutdown initiated")
+
+        logger.info(
+            "Application shutdown initiated"
+        )
 
 
 app = FastAPI(
