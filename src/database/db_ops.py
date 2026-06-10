@@ -206,3 +206,30 @@ def switch_active_model(
             db.rollback()
             logger.exception(f"Failed to switch active model to ID: {new_active_id}")
             raise        
+        
+        
+        
+def get_first_model() -> ModelRegistry | None:
+
+    with db_connect() as db:
+
+        logger.info("Fetching first model record")
+
+        try:
+
+            model_record = (
+                db.query(ModelRegistry)
+                .order_by(ModelRegistry.id.asc())
+                .first()
+            )
+
+            if model_record is None:
+                logger.warning("No model records found in database")
+                return None
+
+            logger.info(f"First model record found. ID: {model_record.id}")
+            return model_record
+
+        except Exception:
+            logger.exception("Failed to fetch first model record")
+            raise        
