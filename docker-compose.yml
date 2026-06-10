@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+
+  driftshield:
+
+    build: .
+
+    container_name: driftshield-backend
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - driftshield_models:/app/models
+      - driftshield_metrics:/app/metrics
+
+    restart: unless-stopped
+
+
+volumes:
+
+  driftshield_models:
+
+  driftshield_metrics:
