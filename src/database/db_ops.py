@@ -233,3 +233,50 @@ def get_first_model() -> ModelRegistry | None:
         except Exception:
             logger.exception("Failed to fetch first model record")
             raise        
+        
+        
+        
+def activate_initial_model(
+    model_id: int
+) -> None:
+
+    with db_connect() as db:
+
+        logger.info(
+            f"Activating initial model ID: {model_id}"
+        )
+
+        try:
+
+            model_record = (
+                db.query(ModelRegistry)
+                .filter(ModelRegistry.id == model_id)
+                .first()
+            )
+
+            if model_record is None:
+
+                logger.warning(
+                    f"No model found for ID: {model_id}"
+                )
+
+                return
+
+            model_record.is_active = True
+            model_record.activated_at = datetime.now()
+
+            db.commit()
+
+            logger.info(
+                f"Initial model activated successfully. ID: {model_id}"
+            )
+
+        except Exception:
+
+            db.rollback()
+
+            logger.exception(
+                f"Failed to activate initial model ID: {model_id}"
+            )
+
+            raise        

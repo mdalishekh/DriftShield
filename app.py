@@ -2,7 +2,11 @@ from fastapi import FastAPI, Response
 from src.api.routers import model_registry_route, prediction_route
 from src.utils.logs_handler import logger
 from src.models.load_models import (get_current_model, get_current_scaler)
-from src.database.db_ops import (get_active_model, get_first_model)
+from src.database.db_ops import (
+    get_active_model, 
+    get_first_model,
+    activate_initial_model
+    )
 from src.models.load_models import load_model_into_memory
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -40,6 +44,8 @@ async def lifespan(app: FastAPI):
                     model_name=first_model.model_name,
                     scaler_name=first_model.scaler_name
                 )
+                
+                activate_initial_model(first_model.id)
 
         logger.info("Application startup completed")
 
