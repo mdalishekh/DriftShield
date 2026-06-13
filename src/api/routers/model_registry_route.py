@@ -30,7 +30,8 @@ router = APIRouter(
 async def upload_models(
     model_file: UploadFile = File(...),
     scaler_file: UploadFile = File(...),
-    metrics_file: UploadFile = File(...)
+    metrics_file: UploadFile = File(...),
+    reference_csv: UploadFile = File(...)
 ):
 
     try:
@@ -40,25 +41,35 @@ async def upload_models(
         model_filename = model_file.filename
         scaler_filename = scaler_file.filename
         metrics_filename = metrics_file.filename
+        reference_csv_filename = reference_csv.filename
 
         if not model_filename:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Model filename is missing."
+                detail="Model file is missing."
             )
 
         if not scaler_filename:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Scaler filename is missing."
+                detail="Scaler file is missing."
             )
 
         if not metrics_filename:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Metrics filename is missing."
+                detail="Metrics file is missing."
             )
-
+            
+        if not reference_csv_filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Reference CSV file is missing."
+            )
+        
+        
+            
+        # Checking files name convention
         if not model_filename.endswith("_model.pkl"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -76,6 +87,15 @@ async def upload_models(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Metrics file must end with '_metrics.json'."
             )
+            
+        
+        if not reference_csv_filename.endswith("_reference.csv"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Reference CSV file must end with '_reference.csv'."
+            )    
+            
+            
 
 
         # Models & Metrics Folder
@@ -84,20 +104,29 @@ async def upload_models(
 
         models_dir = project_root / "models"
         metrics_dir = project_root / "metrics"
+        reference_dir = project_root / "csv"
 
         models_dir.mkdir(
             parents=True,
             exist_ok=True
         )
         
-        models_dir.mkdir(
+        metrics_dir.mkdir(
             parents=True,
             exist_ok=True
         )
+        
+        reference_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+        
 
         model_path = models_dir / model_filename
         scaler_path = models_dir / scaler_filename
         metrics_path = metrics_dir / metrics_filename
+        reference_path = reference_dir / reference_csv_filename
+        
 
         # Duplicate File Validation
 
@@ -118,9 +147,16 @@ async def upload_models(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"{metrics_filename} already exists."
             )
+            
+        
+        if reference_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"{reference_csv_filename} already exists."
+            )    
 
         # Save Files
-        logger.info("Uploading Model & Metric files")
+        logger.info("Uploading Model, Metrics & Reference CSV files")
         model_path.write_bytes(
             await model_file.read()
         )
@@ -132,14 +168,19 @@ async def upload_models(
         metrics_path.write_bytes(
             await metrics_file.read()
         )
-
-        logger.info("Model & Metrics files uploaded successfully")
-
         
+        reference_path.write_bytes(
+            await reference_csv.read()
+        )
+
+        logger.info("Model, Metrics & Reference CSV files uploaded successfully")
+
+        # Inserting files metadata
         insert_model_metadata(
             model_name=model_filename,
             scaler_name=scaler_filename,
-            metrics_name=metrics_filename
+            metrics_name=metrics_filename,
+            reference_csv_name=reference_csv_filename
         )
 
         return {
@@ -147,7 +188,8 @@ async def upload_models(
             "message": "Model files uploaded successfully.",
             "model_name": model_filename,
             "scaler_name": scaler_filename,
-            "metrics_name": metrics_filename
+            "metrics_name": metrics_filename,
+            "reference_csv_name": reference_csv_filename
         }
 
     except HTTPException:
@@ -197,8 +239,6 @@ def get_models():
             detail="Failed to fetch registered models."
         )        
         
-
-
 
 
 

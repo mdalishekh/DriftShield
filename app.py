@@ -22,7 +22,11 @@ async def lifespan(app: FastAPI):
 
         active_model = get_active_model()
 
-        if active_model:
+        # --------------------------------------------------
+        # CASE 1
+        # Active model available
+        # --------------------------------------------------
+        if active_model is not None:
 
             logger.info(
                 f"Active model found: {active_model.model_name}"
@@ -35,27 +39,41 @@ async def lifespan(app: FastAPI):
                     scaler_name=active_model.scaler_name
                 )
 
+                logger.info(
+                    "Active model loaded successfully"
+                )
+
             except FileNotFoundError as e:
 
                 logger.warning(
                     f"Active model files not found: {e}"
                 )
 
+            except Exception as e:
+
+                logger.error(
+                    f"Failed to load active model: {e}"
+                )
+
+        # --------------------------------------------------
+        # CASE 2
+        # No active model
+        # Try first available model
+        # --------------------------------------------------
         else:
 
             logger.warning(
-                "No active model found. Loading first available model."
+                "No active model found."
             )
 
             first_model = get_first_model()
 
-            if first_model is None:
+            if first_model is not None:
 
-                logger.warning(
-                    "No models available in database."
+                logger.info(
+                    f"Loading first available model: "
+                    f"{first_model.model_name}"
                 )
-
-            else:
 
                 try:
 
@@ -68,14 +86,44 @@ async def lifespan(app: FastAPI):
                         first_model.id
                     )
 
+                    logger.info(
+                        f"Model {first_model.model_name} "
+                        f"activated successfully"
+                    )
+
                 except FileNotFoundError as e:
 
                     logger.warning(
                         f"First model files not found: {e}"
                     )
 
+                except Exception as e:
+
+                    logger.error(
+                        f"Failed to load first model: {e}"
+                    )
+
+            # --------------------------------------------------
+            # CASE 3
+            # Empty Database
+            # --------------------------------------------------
+            else:
+
+                logger.warning(
+                    "No models available in database. "
+                    "Application will start without model."
+                )
+
         logger.info(
             "Application startup completed"
+        )
+
+        yield
+
+    except Exception as e:
+
+        logger.error(
+            f"Unexpected startup error: {e}"
         )
 
         yield

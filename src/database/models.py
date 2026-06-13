@@ -42,6 +42,7 @@ class ModelRegistry(Base):
     model_name = Column(String, nullable=False, unique=True)
     scaler_name = Column(String,nullable=False,unique=True)
     metrics_name = Column(String, nullable=False, unique=True)
+    reference_csv_name = Column(String, nullable=False, unique=True)
     uploaded_at = Column(DateTime, default=datetime.now, nullable=False)
     activated_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=False, nullable=False)    
