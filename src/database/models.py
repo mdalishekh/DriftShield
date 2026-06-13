@@ -18,13 +18,15 @@ class Prediction(Base):
     existing_loans = Column(Integer, nullable=False)
     existing_loan_emi = Column(Integer, nullable=False)
     employed = Column(Boolean, nullable=False)
+    # Output default
+    default = Column(Boolean, nullable=False)
     loan_amount = Column(Integer, nullable=False)
     loan_tenure_months = Column(Integer, nullable=False)
     emi_to_income_ratio = Column(Float, nullable=False)
     loan_to_income_ratio = Column(Float, nullable=False)
     employment_type = Column(String, nullable=False)
+    
     # Output
-    predicted_default = Column(Boolean, nullable=False)
     probability = Column(Float, nullable=False)
     # Meta
     timestamp = Column(DateTime, default=datetime.now)
