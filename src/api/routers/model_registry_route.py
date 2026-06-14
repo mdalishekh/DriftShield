@@ -4,8 +4,7 @@ from fastapi import (
     UploadFile,
     File,
     HTTPException,
-    status,
-    BackgroundTasks
+    status
 )
 
 from src.database.db_ops import (
@@ -204,8 +203,6 @@ async def upload_models(
         )
         
         
-        
-
 
 @router.get("/list")
 def get_models():
@@ -240,7 +237,6 @@ def get_models():
             detail="Failed to fetch registered models."
         )        
         
-
 
 
 @router.delete("/delete/{model_id}")
