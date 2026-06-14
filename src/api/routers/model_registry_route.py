@@ -224,6 +224,7 @@ def get_models():
                     "model_name": model.model_name,
                     "scaler_name": model.scaler_name,
                     "metrics_name": model.metrics_name,
+                    "reference_csv_name": model.reference_csv_name,
                     "uploaded_at": model.uploaded_at,
                     "activated_at": model.activated_at,
                     "is_active": model.is_active
@@ -266,16 +267,15 @@ def delete_model(model_id: int):
             )
 
         project_root = Path(__file__).resolve().parents[3]
-
         model_path = (project_root/"models"/model_record.model_name)
-
         scaler_path = (project_root/"models"/model_record.scaler_name)
-
         metrics_path = (project_root/"metrics"/model_record.metrics_name)
+        reference_csv_path = (project_root/"csv"/model_record.reference_csv_name)
 
         model_path.unlink()
         scaler_path.unlink()
         metrics_path.unlink()
+        reference_csv_path.unlink()
 
         logger.info(
             f"Files deleted successfully for model ID: {model_id}"
@@ -353,7 +353,8 @@ def activate_model(model_id: int):
             "message": "Model activated successfully.",
             "model_id": model_record.id,
             "model_name": model_record.model_name,
-            "scaler_name": model_record.scaler_name
+            "scaler_name": model_record.scaler_name,
+            "reference_csv_name": model_record.reference_csv_name
         }
 
     except HTTPException:
