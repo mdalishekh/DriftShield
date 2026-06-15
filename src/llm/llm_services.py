@@ -1,8 +1,15 @@
+from pathlib import Path
 from src.utils.logs_handler import logger
 from src.utils.loan_advisor import risk_calculation
-from src.llm.prompts import (loan_advisor_prompt, LOAN_ADVISOR_CONTEXT)
+from src.llm.prompts import (
+    loan_advisor_prompt, 
+    build_drift_prompt, 
+    DRIFT_CONTEXT,
+    LOAN_ADVISOR_CONTEXT
+    )
 from src.utils.loan_advisor import smart_loan_suggestions
 from src.llm.groq_client import GroqClient
+from src.utils.drift_helper import parse_drift_metrics
 
 groq_client = GroqClient()
 
@@ -33,3 +40,31 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     )
 
     return assessment
+
+
+
+
+def generate_drift_insights():
+    
+    project_root = Path(__file__).resolve().parents[2]
+
+    json_path = (
+        project_root
+        / "metrics"
+        / "drift_metrics.json"
+    )
+
+    parsed_metrics = parse_drift_metrics(json_path)
+
+    user_prompt = build_drift_prompt(parsed_metrics)
+
+    llm_response = groq_client.generate_response(
+        system_prompt=DRIFT_CONTEXT,
+        user_prompt=user_prompt,
+    )
+
+    return {
+        "drift_status": parsed_metrics["status"],
+        "drift_percentage": parsed_metrics["drift_percentage"],
+        "llm_response": llm_response
+    }

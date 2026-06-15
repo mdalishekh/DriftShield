@@ -178,3 +178,151 @@ def loan_advisor_prompt(
     """
 
     return prompt
+
+
+DRIFT_CONTEXT = """
+You are DriftShield AI, an expert Machine Learning Monitoring Assistant.
+
+Your role is to analyze machine learning data drift reports and explain their implications in a clear, professional, and business-friendly manner.
+
+Guidelines:
+
+- Focus only on data drift analysis.
+- Explain findings in simple language.
+- Avoid technical jargon unless necessary.
+- Highlight the most affected features.
+- Assess potential impact on model reliability.
+- Recommend practical actions.
+- Recommend retraining only when justified.
+- Do not exaggerate risks.
+- Base conclusions only on the provided drift metrics.
+- Never invent information that is not present in the report.
+
+Response Format:
+
+## Executive Summary
+
+## Drift Analysis
+
+## Business Impact
+
+## Model Reliability
+
+## Recommended Actions
+
+## Retraining Recommendation
+
+Tone:
+- Professional
+- Concise
+- Actionable
+- Suitable for recruiters, analysts, and ML engineers
+
+Response Length:
+- Between 150 and 200 words.
+"""
+
+
+
+def build_drift_prompt(parsed_metrics):
+
+    status = parsed_metrics["status"]
+
+    drift_percentage = parsed_metrics[
+        "drift_percentage"
+    ]
+
+    drifted_columns_count = parsed_metrics[
+        "drifted_columns_count"
+    ]
+
+    total_columns = parsed_metrics[
+        "total_columns"
+    ]
+
+    stable_columns_count = parsed_metrics[
+        "stable_columns_count"
+    ]
+
+    top_drift_columns = parsed_metrics[
+        "top_drift_columns"
+    ]
+
+    drifted_columns = parsed_metrics[
+        "drifted_columns"
+    ]
+
+    top_columns_text = ""
+
+    for index, column in enumerate(
+        top_drift_columns,
+        start=1
+    ):
+
+        top_columns_text += (
+            f"{index}. "
+            f"{column['column']} "
+            f"(score={column['score']})\n"
+        )
+
+    drifted_column_names = [
+        column["column"]
+        for column in drifted_columns
+    ]
+
+    prompt = f"""
+You are an expert Machine Learning Monitoring Assistant.
+
+Analyze the following data drift report and provide a professional assessment.
+
+DRIFT SUMMARY
+
+Overall Status:
+{status}
+
+Drift Percentage:
+{drift_percentage}%
+
+Drifted Columns:
+{drifted_columns_count}
+
+Stable Columns:
+{stable_columns_count}
+
+Total Columns:
+{total_columns}
+
+Drifted Column Names:
+{", ".join(drifted_column_names)}
+
+Most Drifted Columns:
+{top_columns_text}
+
+INSTRUCTIONS
+
+Provide your response in the following sections:
+
+1. Executive Summary
+- Briefly explain the overall drift situation.
+
+2. Drift Analysis
+- Explain what the detected drift means.
+- Mention the most affected columns.
+
+3. Business Impact
+- Explain how this drift may affect model predictions.
+
+4. Model Reliability Assessment
+- Assess whether the current model can still be trusted.
+
+5. Recommended Actions
+- Provide practical next steps.
+
+6. Retraining Recommendation
+- State whether retraining should be considered.
+- Explain why.
+
+Keep the response professional, concise, and suitable for display inside an ML monitoring dashboard.
+"""
+
+    return prompt
