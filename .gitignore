@@ -8,6 +8,7 @@ __pycache__/
 models/
 metrics/
 csv/
+reports/
 
 # C extensions
 *.so
