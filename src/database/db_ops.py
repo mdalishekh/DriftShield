@@ -24,7 +24,7 @@ def insert_prediction(payload: dict, predicted_default: bool, probability: float
             emi_to_income_ratio=payload["emi_to_income_ratio"],
             loan_to_income_ratio=payload["loan_to_income_ratio"],
             employment_type=payload["employment_type"],
-            default=predicted_default,
+            predicted_default=predicted_default,
             probability=probability
         )
         db.add(record)

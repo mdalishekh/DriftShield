@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 from pathlib import Path
 from .logs_handler import logger
 from src.database.db_ops import get_active_model
@@ -16,7 +17,7 @@ def get_current_dataframe():
                 existing_loans,
                 existing_loan_emi,
                 employed,
-                default,
+                predicted_default,
                 loan_amount,
                 loan_tenure_months,
                 emi_to_income_ratio,
@@ -28,6 +29,9 @@ def get_current_dataframe():
         """
 
     current_df = pd.read_sql(query, engine)
+    current_df.rename(columns={
+        "predicted_default" : "default"
+    },inplace=True)
     return current_df
 
 
@@ -129,7 +133,108 @@ def generate_drift_report():
     logger.info("Drift report generated successfully")
 
     return {
-        "html_file": str(html_path),
-        "json_file": str(json_path),
-        "reference_csv_file" : str(reference_csv_path)
+        "html_file": "drift_report.html",
+        "json_file": "drift_metrics.json",
+        "reference_csv_file" : active_model.reference_csv_name
     }
+    
+    
+
+def parse_drift_metrics(json_path):
+
+    with open(json_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    metrics = data.get("metrics", [])
+
+    drifted_columns_count = 0
+    drift_share = 0.0
+
+    drifted_columns = []
+    stable_columns = []
+
+    top_drift_columns = []
+
+    for metric in metrics:
+
+        metric_name = metric.get("metric_name", "")
+        metric_value = metric.get("value")
+
+        # Overall Drift Summary
+        if metric_name.startswith("DriftedColumnsCount"):
+
+            drifted_columns_count = int(
+                metric_value.get("count", 0)
+            )
+
+            drift_share = float(
+                metric_value.get("share", 0)
+            )
+
+        # Column Level Drift
+        elif metric_name.startswith("ValueDrift"):
+
+            column_name = metric["config"]["column"]
+
+            threshold = float(
+                metric["config"]["threshold"]
+            )
+
+            score = float(metric_value)
+
+            column_info = {
+                "column": column_name,
+                "score": round(score, 4),
+                "threshold": threshold
+            }
+
+            if score > threshold:
+
+                drifted_columns.append(column_info)
+
+            else:
+
+                stable_columns.append(column_info)
+
+    # Sort descending by drift score
+    drifted_columns.sort(
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
+    top_drift_columns = drifted_columns[:5]
+
+    total_columns = (
+        len(drifted_columns)
+        + len(stable_columns)
+    )
+
+    drift_percentage = round(drift_share * 100, 2)
+
+    # Health Status
+    if drift_percentage < 25:
+
+        status = "HEALTHY"
+
+    elif drift_percentage < 50:
+
+        status = "MODERATE"
+
+    elif drift_percentage < 75:
+
+        status = "WARNING"
+
+    else:
+
+        status = "CRITICAL"
+
+    return {
+        "status": status,
+        "drift_percentage": drift_percentage,
+        "drifted_columns_count": drifted_columns_count,
+        "total_columns": total_columns,
+        "stable_columns_count": len(stable_columns),
+        "drifted_columns": drifted_columns,
+        "stable_columns": stable_columns,
+        "top_drift_columns": top_drift_columns
+    }    
