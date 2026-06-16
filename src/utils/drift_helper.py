@@ -212,15 +212,15 @@ def parse_drift_metrics(json_path):
     drift_percentage = round(drift_share * 100, 2)
 
     # Health Status
-    if drift_percentage < 25:
+    if drift_percentage <=10:
 
         status = "HEALTHY"
 
-    elif drift_percentage < 50:
+    elif drift_percentage < 20:
 
         status = "MODERATE"
 
-    elif drift_percentage < 75:
+    elif drift_percentage < 40:
 
         status = "WARNING"
 

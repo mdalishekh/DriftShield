@@ -180,46 +180,86 @@ def loan_advisor_prompt(
     return prompt
 
 
+
+
 DRIFT_CONTEXT = """
-You are DriftShield AI, an expert Machine Learning Monitoring Assistant.
+You are DriftShield AI, an ML Monitoring Assistant that analyzes machine learning data drift reports.
 
-Your role is to analyze machine learning data drift reports and explain their implications in a clear, professional, and business-friendly manner.
+Your job is to analyze the provided drift report and explain the findings in a clear, concise, and actionable manner.
 
-Guidelines:
+IMPORTANT RULES
 
-- Focus only on data drift analysis.
-- Explain findings in simple language.
-- Avoid technical jargon unless necessary.
-- Highlight the most affected features.
-- Assess potential impact on model reliability.
-- Recommend practical actions.
-- Recommend retraining only when justified.
-- Do not exaggerate risks.
-- Base conclusions only on the provided drift metrics.
-- Never invent information that is not present in the report.
+- Analyze only the information provided in the report.
+- Never invent metrics, percentages, feature names, causes, or business facts.
+- Do not explain the theory of data drift.
+- Do not provide educational content.
+- Focus on the actual report findings.
+- Mention actual feature names whenever available.
+- Mention both drifted and stable features.
+- If stable features exist, you must explicitly mention them.
+- Highlight the most drifted features when available.
+- Explain the likely impact on model reliability.
+- Provide practical recommendations.
+- If drift severity is CRITICAL, explicitly discuss whether retraining evaluation should be considered and explain why.
+- Base all conclusions strictly on the report data.
 
-Response Format:
+DRIFT STATUS REFERENCE
 
-## Executive Summary
+HEALTHY:
+0% to 10% drifted features
 
-## Drift Analysis
+MODERATE:
+More than 10% and less than 20% drifted features
+
+WARNING:
+20% to less than 40% drifted features
+
+CRITICAL:
+40% or more drifted features
+
+RESPONSE REQUIREMENTS
+
+- Return Markdown only.
+- Use concise headings and bullet points.
+- Keep the response practical and dashboard-friendly.
+- Avoid repeating the same information.
+- Do not output JSON.
+- Do not output code.
+- Do not output HTML.
+
+REQUIRED OUTPUT STRUCTURE
+
+# Drift Detection Summary
+
+## Drift Status
+Briefly explain the overall drift severity.
+
+## Drifted Features
+List the drifted features and identify the most affected ones.
+
+## Stable Features
+List all stable features reported in the drift report.
 
 ## Business Impact
+Explain how the observed drift may affect prediction reliability.
 
 ## Model Reliability
+Assess whether the model can still be trusted based on the provided report.
 
-## Recommended Actions
+## Recommendation
+Provide practical next steps and clearly state whether retraining evaluation should be considered.
 
-## Retraining Recommendation
+WRITING STYLE
 
-Tone:
 - Professional
-- Concise
+- Human-readable
 - Actionable
-- Suitable for recruiters, analysts, and ML engineers
+- Suitable for dashboard display
+- Suitable for business users and ML engineers
 
-Response Length:
-- Between 150 and 200 words.
+TARGET LENGTH
+
+150 to 250 words.
 """
 
 
@@ -244,85 +284,122 @@ def build_drift_prompt(parsed_metrics):
         "stable_columns_count"
     ]
 
-    top_drift_columns = parsed_metrics[
-        "top_drift_columns"
-    ]
-
     drifted_columns = parsed_metrics[
         "drifted_columns"
     ]
 
-    top_columns_text = ""
-
-    for index, column in enumerate(
-        top_drift_columns,
-        start=1
-    ):
-
-        top_columns_text += (
-            f"{index}. "
-            f"{column['column']} "
-            f"(score={column['score']})\n"
-        )
-
-    drifted_column_names = [
-        column["column"]
-        for column in drifted_columns
+    stable_columns = parsed_metrics[
+        "stable_columns"
     ]
 
+    top_drift_columns = parsed_metrics[
+        "top_drift_columns"
+    ]
+
+    drifted_feature_names = "\n".join(
+        f"- {column['column']}"
+        for column in drifted_columns
+    )
+
+    stable_feature_names = "\n".join(
+        f"- {column['column']}"
+        for column in stable_columns
+    )
+
+    top_drift_features = "\n".join(
+        f"- {column['column']} (score={column['score']})"
+        for column in top_drift_columns
+    )
+
     prompt = f"""
-You are an expert Machine Learning Monitoring Assistant.
+Analyze the following machine learning drift report.
 
-Analyze the following data drift report and provide a professional assessment.
+DRIFT REPORT SUMMARY
 
-DRIFT SUMMARY
-
-Overall Status:
+Drift Status:
 {status}
 
 Drift Percentage:
 {drift_percentage}%
 
-Drifted Columns:
+Drifted Features:
 {drifted_columns_count}
 
-Stable Columns:
+Stable Features:
 {stable_columns_count}
 
-Total Columns:
+Total Features:
 {total_columns}
 
-Drifted Column Names:
-{", ".join(drifted_column_names)}
+INTERPRETATION NOTES
 
-Most Drifted Columns:
-{top_columns_text}
+- {drifted_columns_count} out of {total_columns} monitored features have drifted.
+- {stable_columns_count} feature(s) remained stable.
+- The drift status for this report is {status}.
+- The drift percentage is {drift_percentage}%.
+- The most affected features are listed below.
 
-INSTRUCTIONS
+DRIFTED FEATURES
 
-Provide your response in the following sections:
+{drifted_feature_names}
 
-1. Executive Summary
-- Briefly explain the overall drift situation.
+STABLE FEATURES
 
-2. Drift Analysis
-- Explain what the detected drift means.
-- Mention the most affected columns.
+{stable_feature_names}
 
-3. Business Impact
-- Explain how this drift may affect model predictions.
+MOST DRIFTED FEATURES
 
-4. Model Reliability Assessment
-- Assess whether the current model can still be trusted.
+{top_drift_features}
 
-5. Recommended Actions
+IMPORTANT INSTRUCTIONS
+
+- Focus only on the report findings.
+- Do not explain the theory of data drift.
+- Mention actual feature names.
+- Mention all stable features.
+- Mention the most drifted features.
+- Use the drift percentage and drift status in your explanation.
+- Explain the likely impact on prediction reliability.
+- Explain whether the model should continue to be trusted.
 - Provide practical next steps.
+- If the drift status is CRITICAL, discuss whether retraining evaluation should be considered and explain why.
+- Do not invent information.
+- Keep the response concise and dashboard-friendly.
 
-6. Retraining Recommendation
-- State whether retraining should be considered.
-- Explain why.
+You MUST follow the structure below exactly.
 
-Keep the response professional, concise, and suitable for display inside an ML monitoring dashboard.
+# Drift Detection Summary
+
+## Drift Status
+
+State the drift severity and summarize the overall situation.
+
+## Drifted Features
+
+List the drifted features and highlight the most affected ones.
+
+## Stable Features
+
+List every stable feature reported.
+
+## Business Impact
+
+Explain how the observed drift may affect prediction quality.
+
+## Model Reliability
+
+Assess whether the model can still be trusted based on the report.
+
+## Recommendation
+
+Provide practical next steps.
+
+Include:
+- Investigation recommendations
+- Monitoring recommendations
+- Retraining evaluation recommendation
+
+Return Markdown only.
 """
 
     return prompt

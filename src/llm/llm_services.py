@@ -37,6 +37,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     assessment = groq_client.generate_response(
         system_prompt=LOAN_ADVISOR_CONTEXT,
         user_prompt=user_prompt,
+        max_tokens=500
     )
 
     return assessment
@@ -61,6 +62,7 @@ def generate_drift_insights():
     llm_response = groq_client.generate_response(
         system_prompt=DRIFT_CONTEXT,
         user_prompt=user_prompt,
+        max_tokens=500
     )
 
     return {

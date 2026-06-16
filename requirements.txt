@@ -12,3 +12,4 @@ numpy
 groq
 xgboost
 evidently
+python-multipart
