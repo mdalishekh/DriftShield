@@ -10,6 +10,8 @@ from src.database.db_ops import (
 from src.models.load_models import load_model_into_memory
 from contextlib import asynccontextmanager
 from datetime import datetime
+from fastapi.staticfiles import StaticFiles
+
 
 
 
@@ -142,7 +144,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
+app.mount(
+    "/reports",
+    StaticFiles(directory="reports"),
+    name="reports"
+)
 
 @app.get("/health", tags=["Health Check"])
 def health_check():
