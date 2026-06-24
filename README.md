@@ -1,7 +1,7 @@
 
 ## Phase 1 - Loan Default Prediction Workflow
 
-![Phase 1 Prediction Architecture](./assets/phase_1_prediction_architecture.jpg)
+![Phase 1 Prediction Architecture](./assets/phase_1_prediction_architecture.png)
 
 ### Overview
 
@@ -32,3 +32,6 @@ Finally, the backend combines the prediction result and AI-generated recommendat
 8.  The backend combines prediction outputs and AI insights into a JSON response.
     
 9.  The Streamlit frontend displays the final prediction result and AI-generated recommendation to the user.
+
+---
+
