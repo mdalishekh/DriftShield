@@ -1,7 +1,7 @@
 
 ## Phase 1 - Loan Default Prediction Workflow
 
-![Phase 1 Prediction Architecture](assets/phase_1_prediction_architecture.png)
+![Phase 1 Prediction Architecture](./assets/phase_1_prediction_architecture.jpg)
 
 ### Overview
 
