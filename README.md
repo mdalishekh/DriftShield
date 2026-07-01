@@ -38,7 +38,7 @@ Finally, the backend combines the prediction result and AI-generated recommendat
 
 # Phase 2 – Data Drift Detection & AI-Powered Analysis
 
-![Phase 2 - Drift Detection Architecture](assets/phase_2_drift_detection.png)
+![Phase 2 - Drift Detection Architecture](assets/phase_2_drift_detection_arc.png)
 
 ## Overview
 
