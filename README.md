@@ -84,7 +84,7 @@ DriftShield addresses these challenges by combining real-time loan default predi
 ---
 
 
-# # Phase 2 – Data Drift Detection & & AI-Powered Analysis
+# # Phase 2 – Data Drift Detection & AI-Powered Analysis
 
 ## Overview
 
