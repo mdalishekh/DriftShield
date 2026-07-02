@@ -84,7 +84,7 @@ DriftShield addresses these challenges by combining real-time loan default predi
 ---
 
 
-# Phase 2 – Data Drift Detection & & AI-Powered Analysis
+# # Phase 2 – Data Drift Detection & & AI-Powered Analysis
 
 ## Overview
 
@@ -117,37 +117,38 @@ DriftShield continuously monitors production prediction data by comparing it wit
 
 # Phase 3 – Model Registry & Dynamic Model Deployment
 
-![Phase 3 - Model Registry Architecture](assets/phase_3_model_registry.png)
-
 ## Overview
 
-DriftShield includes a centralized Model Registry that enables controlled model version management without requiring application redeployment or source code modifications. Instead of manually replacing model files inside the application, every trained model is registered together with its associated artifacts, allowing new versions to be deployed through the web interface.
+Monitoring a machine learning model is only one part of maintaining a production ML system. Once model degradation is identified, organizations must be able to deploy improved model versions in a controlled manner while ensuring continuous service availability and minimizing operational risks.
 
-When a user uploads a new model version, four required artifacts are submitted simultaneously: the trained machine learning model, the corresponding feature scaler, model evaluation metrics, and the reference training dataset used for drift detection. These artifacts together represent a complete deployable model package.
+DriftShield addresses this challenge through a centralized **Model Registry**, which manages the complete lifecycle of deployed machine learning models. Instead of manually replacing model files or modifying application code, new model versions are registered together with their required deployment artifacts, including the trained model, feature scaler, evaluation metrics, and reference dataset.
 
-After validation, all uploaded artifacts are stored inside persistent AWS EBS storage, while their metadata—including filenames, upload timestamp, activation timestamp, and deployment status—is recorded in the PostgreSQL Model Registry table. This metadata serves as the single source of truth for model version management.
+Once validated, these artifacts are stored in persistent storage and recorded within the Model Registry. Administrators can then activate any registered model through the application interface, allowing the backend to dynamically load the selected model into memory. From that point onward, all future prediction requests and drift detection operations automatically utilize the newly activated model without requiring application downtime or backend redeployment.
 
-The Streamlit dashboard then displays every registered model, allowing administrators to activate or remove model versions through a simple interface. Only one model can remain active at any given time, ensuring consistent prediction behavior across the entire application.
-
-When a new model is activated, the backend performs hot reloading by loading the selected model artifacts directly into application memory. As a result, all future prediction requests and drift detection operations automatically use the newly activated model without requiring application downtime, container recreation, or backend redeployment.
-
-This architecture enables controlled model versioning, centralized artifact management, and seamless production model updates while maintaining continuous service availability.
+This approach separates model lifecycle management from application logic, enabling safe model versioning, simplified deployment, and a production-ready workflow for continuously improving machine learning systems.
 
 ---
 
+## Architecture
+
+![Phase 3 - Model Registry Architecture](assets/phase_3_model_registry.png)
+
+---
+
+
 ## Workflow Summary
 
-1. The user uploads a new model package from the Streamlit Model Registry interface.
-2. Four required artifacts are submitted:
-   - Trained Model (`*_model.pkl`)
-   - Feature Scaler (`*_scaler.pkl`)
-   - Model Metrics (`*_metrics.json`)
-   - Reference Dataset (`*_reference.csv`)
-3. The backend validates filenames, artifact types, and deployment requirements.
-4. Model artifacts are stored in persistent AWS EBS storage.
-5. Model metadata is recorded inside the PostgreSQL Model Registry.
-6. The dashboard displays all available model versions.
-7. The administrator activates the desired model version.
-8. The backend hot-loads the selected model into memory.
-9. All subsequent prediction requests automatically use the newly activated model.
-10. Future drift reports also use the corresponding reference dataset and model artifacts associated with the active deployment.
+1.  The user uploads a new model package from the Streamlit Model Registry interface.
+2.  Four required artifacts are submitted:
+    -   Trained Model (`*_model.pkl`)
+    -   Feature Scaler (`*_scaler.pkl`)
+    -   Model Metrics (`*_metrics.json`)
+    -   Reference Dataset (`*_reference.csv`)
+3.  The backend validates filenames, artifact types, and deployment requirements.
+4.  Model artifacts are stored in persistent AWS EBS storage.
+5.  Model metadata is recorded inside the PostgreSQL Model Registry.
+6.  The dashboard displays all available model versions.
+7.  The administrator activates the desired model version.
+8.  The backend hot-loads the selected model into memory.
+9.  All subsequent prediction requests automatically use the newly activated model.
+10.  Future drift reports also use the corresponding reference dataset and model artifacts associated with the active deployment.
