@@ -152,3 +152,41 @@ This approach separates model lifecycle management from application logic, enabl
 8.  The backend hot-loads the selected model into memory.
 9.  All subsequent prediction requests automatically use the newly activated model.
 10.  Future drift reports also use the corresponding reference dataset and model artifacts associated with the active deployment.
+
+
+---
+
+# Additional Documentation
+
+To keep this README concise and focused on the overall system architecture, additional technical documentation is provided separately.
+
+- 📁 **Backend Project Structure**  
+  Explore the complete backend directory organization, module responsibilities, AWS EBS storage layout, and database schema.  
+  → [Backend Project Structure](Backend-Structure.md)
+
+- 🚀 **Deployment Architecture**  
+  Learn how DriftShield is deployed using Docker, GitHub Actions CI/CD, AWS EC2, AWS EBS, and AWS RDS.  
+  → [Deployment Structure](Deployment.md)
+
+- 🖥️ **Frontend Repository**  
+  The Streamlit frontend is maintained in a dedicated repository with its own documentation and source code.  
+  → https://github.com/mdalishekh/DriftShield-Frontend
+
+---
+# Future Improvements
+
+The following enhancements are planned for future releases of DriftShield:
+
+- Automated model retraining pipeline
+- Scheduled drift monitoring
+- Email notifications for critical drift detection
+- Authentication and role-based access control
+- Model performance monitoring dashboard
+- Support for multiple machine learning use cases
+- Automated rollback for failed model deployments
+---
+## 👨‍💻 About 
+- [Portfolio Webpage](https://mdalishekh.in/) 
+- [LinkedIn](https://www.linkedin.com/in/mdalishekh/) 
+- [GitHub](https://github.com/mdalishekh)
+- [Email](mailto:mdalishekh.work@gmail.com)
