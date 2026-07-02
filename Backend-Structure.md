@@ -44,6 +44,9 @@ driftshield/
 ├── notebooks/
 │    └── model_training.ipynb
 │
+├── assests/  					  # Application workflow architecture
+│	 └── phase_1_architecture.png
+│
 ├── src/
 │   ├── api/
 │   │   ├── routers/             # FastAPI APIRouters
