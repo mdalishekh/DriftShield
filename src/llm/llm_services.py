@@ -1,3 +1,5 @@
+# Utilizing GROQ LLM to generate loan assessment and drift reports analysis 
+
 from pathlib import Path
 from src.utils.logs_handler import logger
 from src.utils.loan_advisor import risk_calculation
