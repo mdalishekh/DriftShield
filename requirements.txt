@@ -1,3 +1,4 @@
+# All necessary packages for this application
 sqlalchemy
 psycopg2-binary
 fastapi

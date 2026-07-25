@@ -185,8 +185,9 @@ The following enhancements are planned for future releases of DriftShield:
 - Support for multiple machine learning use cases
 - Automated rollback for failed model deployments
 ---
-## 👨‍💻 About 
-- [Portfolio Webpage](https://mdalishekh.in/) 
-- [LinkedIn](https://www.linkedin.com/in/mdalishekh/) 
-- [GitHub](https://github.com/mdalishekh)
-- [Email](mailto:mdalishekh.work@gmail.com)
+# 👨‍💻 About 
+
+-  **Portfolio:**  https://mdalishekh.in/  
+-  **LinkedIn:**  https://www.linkedin.com/in/mdalishekh/  
+-  **GitHub:**  https://github.com/mdalishekh
+-  **Email:** mdalishekh.work@gmail.com
