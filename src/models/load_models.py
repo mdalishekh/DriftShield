@@ -1,4 +1,4 @@
-# New Models to be Uploaded soon
+# New Models will be trained and deployed 
 import joblib
 from pathlib import Path
 from src.utils.logs_handler import logger
