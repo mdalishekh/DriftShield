@@ -365,3 +365,8 @@ def activate_model(model_id: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to activate model."
         )        
+
+
+@router.post("/data-pipeline")
+def data_processing_pipeline():
+    return None 
