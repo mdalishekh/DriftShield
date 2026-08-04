@@ -12,3 +12,8 @@ def test_home():
     assert response.json() == {
         "message": "Hello World"
     }
+
+def test_fail():
+    response = client.get("/")
+
+    assert response.status_code == 404
