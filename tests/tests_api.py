@@ -1,19 +1,18 @@
-# Unit Test Code for CI/CD Pipelines
+import pytest
 from fastapi.testclient import TestClient
-from main import app
+from .app import app
 
 client = TestClient(app)
 
 
-def test_home():
-    response = client.get("/")
-
+def test_health_check_returns_json():
+    """Test /health endpoint returns valid JSON response"""
+    response = client.get("/health")
+    
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "Hello World"
-    }
-
-def test_fail():
-    response = client.get("/")
-
-    assert response.status_code == 404
+    data = response.json()
+    
+    assert data["status"] == "healthy"
+    assert "timestamp" in data
+    assert "model_loaded" in data
+    assert "scaler_loaded" in data
