@@ -35,7 +35,6 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     )
 
     # Generate response from LLM
-    
     assessment = groq_client.generate_response(
         system_prompt=LOAN_ADVISOR_CONTEXT,
         user_prompt=user_prompt,
