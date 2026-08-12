@@ -20,9 +20,7 @@ class GroqClient:
     """
 
     def __init__(self):
-        self.client = Groq(
-            api_key=ENV.GROQ_API_KEY
-        )
+        self.client = Groq(api_key=ENV.GROQ_API_KEY)
 
         self.model_name = ENV.GROQ_MODEL
 
