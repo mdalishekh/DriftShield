@@ -26,6 +26,8 @@ class GroqClient:
 
         self.model_name = ENV.GROQ_MODEL
 
+# LLM Models Parameters to be optimized
+    
     def generate_response(
         self,
         system_prompt: str,
