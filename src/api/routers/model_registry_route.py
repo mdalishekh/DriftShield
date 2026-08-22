@@ -26,6 +26,8 @@ router = APIRouter(
 )
 
 
+# Exception handling and status code to be added very soon
+
 
 @router.post("/upload")
 async def upload_models(
