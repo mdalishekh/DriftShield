@@ -13,6 +13,8 @@ router = APIRouter(
 )
 
 
+# Exception handling and status code to be added very soon
+
 @router.post("/report")
 def generate_report():
     logger.info("Drift Detection requested")
