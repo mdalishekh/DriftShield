@@ -8,6 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 MODELS_DIR = BASE_DIR / "models"
 
+# Remove .pkl from all accross Project 
+# Replace it with .joblib  (Streamlit Too)
 
 CURRENT_MODEL = None
 CURRENT_SCALER = None
