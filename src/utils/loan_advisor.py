@@ -1,6 +1,8 @@
 from src.utils.logs_handler import logger
 from src.models.prediction import predict_default
 
+# Add Exception Handler
+
 def risk_calculation(predicted_result: dict, payload: dict) -> dict:
 
     logger.info("Calculating risk and positive factors based on prediction result and input data")
