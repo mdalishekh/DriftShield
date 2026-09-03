@@ -115,11 +115,7 @@ def generate_drift_report():
     if json_path.exists():
         json_path.unlink()
 
-    report = Report(
-        metrics=[
-            DataDriftPreset()
-        ]
-    )
+    report = Report(metrics=[DataDriftPreset()])
 
     snapshot = report.run(
         reference_data=reference_df,
@@ -164,22 +160,16 @@ def parse_drift_metrics(json_path):
         # Overall Drift Summary
         if metric_name.startswith("DriftedColumnsCount"):
 
-            drifted_columns_count = int(
-                metric_value.get("count", 0)
-            )
+            drifted_columns_count = int(metric_value.get("count", 0))
 
-            drift_share = float(
-                metric_value.get("share", 0)
-            )
+            drift_share = float(metric_value.get("share", 0))
 
         # Column Level Drift
         elif metric_name.startswith("ValueDrift"):
 
             column_name = metric["config"]["column"]
 
-            threshold = float(
-                metric["config"]["threshold"]
-            )
+            threshold = float(metric["config"]["threshold"])
 
             score = float(metric_value)
 
@@ -194,7 +184,6 @@ def parse_drift_metrics(json_path):
                 drifted_columns.append(column_info)
 
             else:
-
                 stable_columns.append(column_info)
 
     # Sort descending by drift score
