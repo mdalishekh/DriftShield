@@ -19,13 +19,15 @@ class GroqClient:
     - Business rules
     """
 
+# LLM Model to be updated from Llama 3.1 to (OpenAI/Gemini) etc
+    
     def __init__(self):
-        self.client = Groq(
-            api_key=ENV.GROQ_API_KEY
-        )
+        self.client = Groq(api_key=ENV.GROQ_API_KEY)
 
         self.model_name = ENV.GROQ_MODEL
 
+# LLM Models Parameters to be optimized
+    
     def generate_response(
         self,
         system_prompt: str,

@@ -9,6 +9,7 @@ from src.utils.loan_advisor import ratio_calculation
 
 router = APIRouter(prefix="/prediction", tags=["Predictions"])
 
+# Exception handling and status code to be added very soon
 
 @router.post("/", response_model=PredictionResponse)
 def predict(data: PredictionRequest, background_tasks: BackgroundTasks):

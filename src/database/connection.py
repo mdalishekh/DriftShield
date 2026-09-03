@@ -13,6 +13,8 @@ SessionLocal = sessionmaker(bind=engine)
 # Tables create karo
 Base.metadata.create_all(bind=engine)
 
+# Somehow all content from tables are being deleted , Have to figure out
+
 @contextmanager
 def db_connect():
     db = SessionLocal()

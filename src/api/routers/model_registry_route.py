@@ -26,6 +26,8 @@ router = APIRouter(
 )
 
 
+# Exception handling and status code to be added very soon
+
 
 @router.post("/upload")
 async def upload_models(
@@ -365,3 +367,8 @@ def activate_model(model_id: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to activate model."
         )        
+
+
+@router.post("/data-pipeline")
+def data_processing_pipeline():
+    return None 
