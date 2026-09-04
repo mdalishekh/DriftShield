@@ -4,7 +4,7 @@ from src.models.prediction import predict_default
 # Add Exception Handler
 
 def risk_calculation(predicted_result: dict, payload: dict) -> dict:
-
+    # Improve Logs, Use Corelation ID
     logger.info("Calculating risk and positive factors based on prediction result and input data")
 
     risk_factors: list[dict] = []
