@@ -32,7 +32,6 @@ router = APIRouter(
 @router.post("/upload")
 async def upload_models(
     model_file: UploadFile = File(...),
-    scaler_file: UploadFile = File(...),
     metrics_file: UploadFile = File(...),
     reference_csv: UploadFile = File(...)
 ):
@@ -42,7 +41,6 @@ async def upload_models(
         # Filename Validation
 
         model_filename = model_file.filename
-        scaler_filename = scaler_file.filename
         metrics_filename = metrics_file.filename
         reference_csv_filename = reference_csv.filename
 
@@ -52,11 +50,6 @@ async def upload_models(
                 detail="Model file is missing."
             )
 
-        if not scaler_filename:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Scaler file is missing."
-            )
 
         if not metrics_filename:
             raise HTTPException(
@@ -73,16 +66,10 @@ async def upload_models(
         
             
         # Checking files name convention
-        if not model_filename.endswith("_model.pkl"):
+        if not model_filename.endswith("_model.json"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Model file must end with '_model.pkl'."
-            )
-
-        if not scaler_filename.endswith("_scaler.pkl"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Scaler file must end with '_scaler.pkl'."
+                detail="Model file must end with '_model.json'."
             )
 
         if not metrics_filename.endswith("_metrics.json"):
@@ -126,7 +113,6 @@ async def upload_models(
         
 
         model_path = models_dir / model_filename
-        scaler_path = models_dir / scaler_filename
         metrics_path = metrics_dir / metrics_filename
         reference_path = reference_dir / reference_csv_filename
         
@@ -137,12 +123,6 @@ async def upload_models(
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"{model_filename} already exists."
-            )
-
-        if scaler_path.exists():
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"{scaler_filename} already exists."
             )
 
         if metrics_path.exists():
@@ -164,10 +144,6 @@ async def upload_models(
             await model_file.read()
         )
 
-        scaler_path.write_bytes(
-            await scaler_file.read()
-        )
-
         metrics_path.write_bytes(
             await metrics_file.read()
         )
@@ -181,7 +157,6 @@ async def upload_models(
         # Inserting files metadata
         insert_model_metadata(
             model_name=model_filename,
-            scaler_name=scaler_filename,
             metrics_name=metrics_filename,
             reference_csv_name=reference_csv_filename
         )
@@ -190,7 +165,6 @@ async def upload_models(
             "status": "success",
             "message": "Model files uploaded successfully.",
             "model_name": model_filename,
-            "scaler_name": scaler_filename,
             "metrics_name": metrics_filename,
             "reference_csv_name": reference_csv_filename
         }
@@ -223,7 +197,6 @@ def get_models():
                 {
                     "id": model.id,
                     "model_name": model.model_name,
-                    "scaler_name": model.scaler_name,
                     "metrics_name": model.metrics_name,
                     "reference_csv_name": model.reference_csv_name,
                     "uploaded_at": model.uploaded_at,
@@ -268,12 +241,10 @@ def delete_model(model_id: int):
 
         project_root = Path(__file__).resolve().parents[3]
         model_path = (project_root/"models"/model_record.model_name)
-        scaler_path = (project_root/"models"/model_record.scaler_name)
         metrics_path = (project_root/"metrics"/model_record.metrics_name)
         reference_csv_path = (project_root/"csv"/model_record.reference_csv_name)
 
         model_path.unlink()
-        scaler_path.unlink()
         metrics_path.unlink()
         reference_csv_path.unlink()
 
@@ -289,7 +260,6 @@ def delete_model(model_id: int):
             "deleted_record": {
                 "id": model_record.id,
                 "model_name": model_record.model_name,
-                "scaler_name": model_record.scaler_name,
                 "metrics_name": model_record.metrics_name,
                 "uploaded_at": model_record.uploaded_at,
                 "activated_at": model_record.activated_at,
@@ -353,7 +323,6 @@ def activate_model(model_id: int):
             "message": "Model activated successfully.",
             "model_id": model_record.id,
             "model_name": model_record.model_name,
-            "scaler_name": model_record.scaler_name,
             "reference_csv_name": model_record.reference_csv_name
         }
 
