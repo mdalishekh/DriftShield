@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from src.api.routers import drift_route, model_registry_route, prediction_route
 from src.utils.logs_handler import logger
-from src.models.load_models import (get_current_model, get_current_scaler)
+from src.models.load_models import get_current_model
 from src.database.db_ops import (
     get_active_model, 
     get_first_model,
@@ -30,32 +30,17 @@ async def lifespan(app: FastAPI):
         # --------------------------------------------------
         if active_model is not None:
 
-            logger.info(
-                f"Active model found: {active_model.model_name}"
-            )
+            logger.info(f"Active model found: {active_model.model_name}")
 
             try:
-
-                load_model_into_memory(
-                    model_name=active_model.model_name,
-                    scaler_name=active_model.scaler_name
-                )
-
-                logger.info(
-                    "Active model loaded successfully"
-                )
+                load_model_into_memory(model_name=active_model["model_name"])
+                logger.info("Active model loaded successfully")
 
             except FileNotFoundError as e:
-
-                logger.warning(
-                    f"Active model files not found: {e}"
-                )
+                logger.warning(f"Active model files not found: {e}")
 
             except Exception as e:
-
-                logger.error(
-                    f"Failed to load active model: {e}"
-                )
+                logger.error(f"Failed to load active model: {e}")
 
         # --------------------------------------------------
         # CASE 2
@@ -63,30 +48,20 @@ async def lifespan(app: FastAPI):
         # Try first available model
         # --------------------------------------------------
         else:
-
-            logger.warning(
-                "No active model found."
-            )
+            logger.warning("No active model found.")
 
             first_model = get_first_model()
-
             if first_model is not None:
-
                 logger.info(
                     f"Loading first available model: "
                     f"{first_model.model_name}"
                 )
 
                 try:
-
-                    load_model_into_memory(
-                        model_name=first_model.model_name,
-                        scaler_name=first_model.scaler_name
-                    )
-
-                    activate_initial_model(
-                        first_model.id
-                    )
+                    load_model_into_memory(model_name=first_model.model_name)
+                    
+                    # Activate first model from DB
+                    activate_initial_model(first_model.id)
 
                     logger.info(
                         f"Model {first_model.model_name} "
@@ -94,47 +69,30 @@ async def lifespan(app: FastAPI):
                     )
 
                 except FileNotFoundError as e:
-
-                    logger.warning(
-                        f"First model files not found: {e}"
-                    )
+                    logger.warning(f"First model files not found: {e}")
 
                 except Exception as e:
-
-                    logger.error(
-                        f"Failed to load first model: {e}"
-                    )
+                    logger.error(f"Failed to load first model: {e}")
 
             # --------------------------------------------------
             # CASE 3
             # Empty Database
             # --------------------------------------------------
             else:
-
                 logger.warning(
                     "No models available in database. "
                     "Application will start without model."
                 )
-
-        logger.info(
-            "Application startup completed"
-        )
-
+        logger.info("Application startup completed")
         yield
 
     except Exception as e:
 
-        logger.error(
-            f"Unexpected startup error: {e}"
-        )
-
+        logger.error(f"Unexpected startup error: {e}")
         yield
 
     finally:
-
-        logger.info(
-            "Application shutdown initiated"
-        )
+        logger.info("Application shutdown initiated")
 
 
 app = FastAPI(
@@ -143,6 +101,7 @@ app = FastAPI(
     title="DriftShield",
     version="1.0.0"
 )
+
 
 app.mount(
     "/reports",
@@ -154,12 +113,10 @@ app.mount(
 def health_check():
     logger.info("Health check requested")
     model = get_current_model()
-    scaler = get_current_scaler()
     return {
         "status": "healthy",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "model_loaded": model is not None,
-        "scaler_loaded": scaler is not None,
     }
 
 

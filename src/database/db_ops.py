@@ -107,7 +107,6 @@ def get_all_models() -> list[ModelRegistry]:
         
         
 
-
 def delete_model_record(model_id: int) -> None:
 
     with db_connect() as db:
@@ -165,7 +164,6 @@ def get_active_model() -> ModelRegistry | None:
             raise        
         
         
-
 
 
 def switch_active_model(
