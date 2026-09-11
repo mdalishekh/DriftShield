@@ -3,10 +3,10 @@ from src.api.routers import drift_route, model_registry_route, prediction_route
 from src.utils.logs_handler import logger
 from src.models.load_models import get_current_model
 from src.database.db_ops import (
-    get_active_model, 
-    get_first_model,
-    activate_initial_model
-    )
+get_active_model, 
+get_first_model,
+activate_initial_model
+)
 from src.models.load_models import load_model_into_memory
 from contextlib import asynccontextmanager
 from datetime import datetime

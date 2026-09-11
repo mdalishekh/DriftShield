@@ -1,4 +1,4 @@
-from .load_models import (get_current_model, get_current_scaler)
+from .load_models import get_current_model
 import pandas as pd
 from src.utils.logs_handler import logger
 
@@ -17,7 +17,7 @@ def predict_default(data: dict):
     
     try:
         model = get_current_model()
-        scaler = get_current_scaler()
+        
         # Convert employed
         employed = 1 if data['employed'] == True else 0
         
@@ -44,14 +44,14 @@ def predict_default(data: dict):
             'loan_to_income_ratio', 'employment_type'
         ])
         
-        # Scale + Predict
-        logger.info("Scaling input data and making prediction")
-        input_scaled = scaler.transform(input_df)
         logger.info("Making prediction using the model")
-        prediction = model.predict(input_scaled)[0]
-        probability = model.predict_proba(input_scaled)[0][1]
+        
+        prediction = model.predict(input_df)[0]
+        probability = model.predict_proba(input_df)[0][1]
+        
         predicted_label = True if prediction == 1 else False
         logger.info(f"Prediction made: {predicted_label}, Probability: {probability}")
+        
         return {
             "default": predicted_label,
             "probability": round(float(probability), 4)
