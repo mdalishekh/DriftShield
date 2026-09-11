@@ -13,8 +13,6 @@ from datetime import datetime
 from fastapi.staticfiles import StaticFiles
 
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 

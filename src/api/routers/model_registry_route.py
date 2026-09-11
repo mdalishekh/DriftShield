@@ -84,32 +84,17 @@ async def upload_models(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Reference CSV file must end with '_reference.csv'."
             )    
-            
-            
-
-
+     
         # Models & Metrics Folder
+        parent_dir = Path(__file__).resolve().parents[3]
 
-        project_root = Path(__file__).resolve().parents[3]
+        models_dir = parent_dir / "models"
+        metrics_dir = parent_dir / "metrics"
+        reference_dir = parent_dir / "csv"
 
-        models_dir = project_root / "models"
-        metrics_dir = project_root / "metrics"
-        reference_dir = project_root / "csv"
-
-        models_dir.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-        
-        metrics_dir.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-        
-        reference_dir.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+        models_dir.mkdir(parents=True, exist_ok=True)
+        metrics_dir.mkdir(parents=True, exist_ok=True)
+        reference_dir.mkdir(parents=True, exist_ok=True)
         
 
         model_path = models_dir / model_filename
@@ -298,19 +283,18 @@ def activate_model(model_id: int):
             )
 
         if model_record.is_active:
-
             return {
                 "status": "warning",
                 "message": "Selected model is already active."
             }
 
-        load_model_into_memory(
-            model_name=model_record.model_name,
-            scaler_name=model_record.scaler_name
-        )
+        # Loads new model into application's Memory
+        load_model_into_memory(model_name=model_record.model_name)
 
+        # Getting currently loaded model details
         current_active_model = get_active_model()
 
+        # Updates model status in database
         switch_active_model(
             current_active_id=current_active_model.id,
             new_active_id=model_record.id
