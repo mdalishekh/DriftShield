@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
             logger.info(f"Active model found: {active_model.model_name}")
 
             try:
-                load_model_into_memory(model_name=active_model["model_name"])
+                load_model_into_memory(model_name=active_model.model_name)
                 logger.info("Active model loaded successfully")
 
             except FileNotFoundError as e:
