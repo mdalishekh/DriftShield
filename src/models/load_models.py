@@ -1,15 +1,13 @@
 # New Models will be trained and deployed 
-import joblib
+from xgboost import XGBClassifier
 from pathlib import Path
 from src.utils.logs_handler import logger
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
 MODELS_DIR = BASE_DIR / "models"
 
-# Replace it with .joblib  (Streamlit Too)
-
+# Making Model available globally in application memory
 CURRENT_MODEL = None
 
 
@@ -24,7 +22,8 @@ def load_model_into_memory(model_name: str) -> None:
         raise FileNotFoundError(
             f"Model file not found: {model_name}"
         )
-    CURRENT_MODEL = joblib.load(model_path)
+    CURRENT_MODEL = XGBClassifier()
+    CURRENT_MODEL.load_model(model_path)    
     logger.info("Model loaded successfully into memory")
     
     
