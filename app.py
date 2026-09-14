@@ -22,10 +22,7 @@ async def lifespan(app: FastAPI):
 
         active_model = get_active_model()
 
-        # --------------------------------------------------
-        # CASE 1
-        # Active model available
-        # --------------------------------------------------
+        # CASE 1 - Active model available
         if active_model is not None:
 
             logger.info(f"Active model found: {active_model.model_name}")
@@ -40,11 +37,8 @@ async def lifespan(app: FastAPI):
             except Exception as e:
                 logger.error(f"Failed to load active model: {e}")
 
-        # --------------------------------------------------
-        # CASE 2
-        # No active model
-        # Try first available model
-        # --------------------------------------------------
+        
+        # CASE 2 - No active model, Try first available model
         else:
             logger.warning("No active model found.")
 
@@ -72,10 +66,8 @@ async def lifespan(app: FastAPI):
                 except Exception as e:
                     logger.error(f"Failed to load first model: {e}")
 
-            # --------------------------------------------------
-            # CASE 3
-            # Empty Database
-            # --------------------------------------------------
+            
+            # CASE 3 -  Empty Database (Application 1st boot)
             else:
                 logger.warning(
                     "No models available in database. "
