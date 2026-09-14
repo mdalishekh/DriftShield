@@ -270,3 +270,4 @@ def activate_initial_model(
             logger.exception(f"Failed to activate initial model ID: {model_id}")
 
             raise        
+        
