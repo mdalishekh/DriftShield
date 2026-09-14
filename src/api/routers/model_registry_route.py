@@ -15,7 +15,9 @@ from src.database.db_ops import (
     get_model_by_id,
     delete_model_record,
     get_active_model,
-    switch_active_model
+    switch_active_model,
+    get_first_model,
+    activate_initial_model
     )
 from src.models.load_models import load_model_into_memory
 from src.utils.logs_handler import logger
@@ -123,6 +125,11 @@ async def upload_models(
                 detail=f"{reference_csv_filename} already exists."
             )    
 
+        # Insert New Logic here 
+        
+        first_model = get_first_model()
+        is_first_model = first_model is None
+        
         # Save Files
         logger.info("Uploading Model, Metrics & Reference CSV files")
         model_path.write_bytes(
@@ -140,11 +147,28 @@ async def upload_models(
         logger.info("Model, Metrics & Reference CSV files uploaded successfully")
 
         # Inserting files metadata
-        insert_model_metadata(
+        new_model = insert_model_metadata(
             model_name=model_filename,
             metrics_name=metrics_filename,
             reference_csv_name=reference_csv_filename
         )
+        
+        # Application started for first time and there's no initial model
+        if is_first_model:
+            try:
+                load_model_into_memory(model_name=new_model.model_name)             
+                # Activate new model from DB
+                activate_initial_model(new_model.id)
+            
+                logger.info(
+                f"Model {new_model.model_name} "
+                f"activated successfully"
+                )
+            except FileNotFoundError as e:
+                logger.warning(f"First model files not found: {e}")
+            
+            except Exception as e:
+                logger.error(f"Failed to load first model: {e}")    
 
         return {
             "status": "success",
