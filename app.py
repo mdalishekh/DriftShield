@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
                 logger.warning(f"Active model files not found: {e}")
 
             except Exception as e:
-                logger.error(f"Failed to load active model: {e}")
+                logger.exception(f"Failed to load active model: {e}")
 
         
         # CASE 2 - No active model, Try first available model
@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI):
                     logger.warning(f"First model files not found: {e}")
 
                 except Exception as e:
-                    logger.error(f"Failed to load first model: {e}")
+                    logger.exception(f"Failed to load first model: {e}")
 
             
             # CASE 3 -  Empty Database (Application 1st boot)
@@ -77,8 +77,7 @@ async def lifespan(app: FastAPI):
         yield
 
     except Exception as e:
-
-        logger.error(f"Unexpected startup error: {e}")
+        logger.exception(f"Unexpected startup error: {e}")
         yield
 
     finally:
@@ -92,23 +91,34 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
 app.mount(
     "/reports",
     StaticFiles(directory="reports"),
     name="reports"
 )
 
+
 @app.get("/health", tags=["Health Check"])
 def health_check():
-    logger.info("Health check requested")
-    model = get_current_model()
     return {
         "status": "healthy",
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "model_loaded": model is not None,
+        "timestamp": datetime.now().isoformat()
     }
 
+@app.get("/ready", tags=["Health Check"])
+def readiness_check():
+    model = get_current_model()
+
+    if model is None:
+        return {
+            "status": "not_ready",
+            "model_loaded": False
+        }
+
+    return {
+        "status": "ready",
+        "model_loaded": True
+    }
 
 # final endpoint will be /api/v1/{routers prefix}/{endpoint}
 app.include_router(prediction_route.router, prefix="/api/v1")
