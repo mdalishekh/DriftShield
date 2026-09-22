@@ -14,3 +14,4 @@ groq
 xgboost
 evidently
 python-multipart
+shap
