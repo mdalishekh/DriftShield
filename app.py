@@ -98,6 +98,7 @@ app.mount(
 )
 
 
+# Health Check API
 @app.get("/health", tags=["Health Check"])
 def health_check():
     return {
@@ -105,6 +106,7 @@ def health_check():
         "timestamp": datetime.now().isoformat()
     }
 
+# Appliation Status Check API
 @app.get("/ready", tags=["Health Check"])
 def readiness_check():
     model = get_current_model()
