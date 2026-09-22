@@ -10,7 +10,7 @@ from src.config.config import ENV
 engine = create_engine(ENV.DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
-# Tables create karo
+
 Base.metadata.create_all(bind=engine)
 
 # Somehow all content from tables are being deleted , Have to figure out
