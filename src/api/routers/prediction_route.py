@@ -2,7 +2,6 @@ from fastapi import APIRouter, BackgroundTasks
 from src.models.prediction import predict_default
 from src.utils.logs_handler import logger
 from src.api.schemas.schema import PredictionRequest, PredictionResponse
-from src.database.connection import db_connect
 from src.database.db_ops import insert_prediction
 from src.llm.llm_services import generate_loan_assessment
 from src.utils.loan_advisor import ratio_calculation
