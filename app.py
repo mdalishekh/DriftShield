@@ -122,7 +122,10 @@ def readiness_check():
         "model_loaded": True
     }
 
-# final endpoint will be /api/v1/{routers prefix}/{endpoint}
+
+# [ATTENTION NEEDED :- Update url and place v2]
+# final endpoint will be https://{hostname}/api/v2/{routers prefix}/{endpoint}
+
 app.include_router(prediction_route.router, prefix="/api/v1")
 app.include_router(model_registry_route.router, prefix="/api/v1")
 app.include_router(drift_route.router, prefix="/api/v1")
