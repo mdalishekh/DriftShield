@@ -28,13 +28,39 @@ class GroqClient:
 
 # LLM Models Parameters to be optimized
     
+    # def generate_response(
+    #     self,
+    #     system_prompt: str,
+    #     user_prompt: str,
+    #     temperature: float = 0.3,
+    #     max_tokens: int = 100
+    # ) -> str:
+
+    #     response = self.client.chat.completions.create(
+    #         model=self.model_name,
+    #         temperature=temperature,
+    #         max_tokens=max_tokens,
+    #         messages=[
+    #             {
+    #                 "role": "system",
+    #                 "content": system_prompt
+    #             },
+    #             {
+    #                 "role": "user",
+    #                 "content": user_prompt
+    #             }
+    #         ]
+    #     )
+
+    #     return response.choices[0].message.content.strip()
+
     def generate_response(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        temperature: float = 0.3,
-        max_tokens: int = 100
-    ) -> str:
+    self,
+    system_prompt: str,
+    user_prompt: str,
+    temperature: float = 0.3,
+    max_tokens: int = 1000
+) -> str:
 
         response = self.client.chat.completions.create(
             model=self.model_name,
@@ -52,4 +78,17 @@ class GroqClient:
             ]
         )
 
-        return response.choices[0].message.content.strip()
+        print("GROQ RESPONSE:", response)
+        print("CHOICES:", response.choices)
+
+        if not response.choices:
+            raise RuntimeError("Groq returned no choices.")
+
+        content = response.choices[0].message.content
+
+        print("LLM CONTENT:", repr(content))
+
+        if not content:
+            raise RuntimeError("Groq returned an empty response.")
+
+        return content.strip()
