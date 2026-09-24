@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from src.utils.logs_handler import logger
-from src.utils.loan_advisor import risk_calculation
+from src.utils.loan_advisor import risk_calculation, format_shap_analysis
 from src.llm.prompts import (
     loan_advisor_prompt, 
     build_drift_prompt, 
@@ -20,7 +20,8 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     logger.info("Generating loan assessment using LLM")
 
     # Calculate risk and positive factors
-    analysis_result = risk_calculation(predicted_result, payload)
+    shap_analysis_result = risk_calculation(predicted_result, payload)
+    shap_result = format_shap_analysis(shap_analysis_result["shap_analysis"])
     
     # Generate smart loan suggestions based on risk and positive factors
     loan_suggestion = smart_loan_suggestions(predicted_result, payload)
@@ -29,8 +30,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     user_prompt = loan_advisor_prompt(
         default=predicted_result["default"],
         probability=round(float(predicted_result["probability"])*100, 2),
-        risk_factors=analysis_result["risk_factors"],
-        positive_factors=analysis_result["positive_factors"],
+        shap_analysis = shap_result,
         loan_suggestion=loan_suggestion
     )
 
@@ -38,9 +38,9 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
     assessment = groq_client.generate_response(
         system_prompt=LOAN_ADVISOR_CONTEXT,
         user_prompt=user_prompt,
-        max_tokens=500
+        max_tokens=1000
     )
-
+    print("LLM RAW RESPONSE:", repr(assessment))
     return assessment
 
 

@@ -1,208 +1,369 @@
+import shap
+import pandas as pd
 from src.utils.logs_handler import logger
-from src.models.prediction import predict_default
+from src.models.prediction import predict_default, EMPLOYMENT_MAP
+from src.models.load_models import get_current_model
 
 # Add Exception Handler
 
+# def risk_calculation(predicted_result: dict, payload: dict) -> dict:
+#     # Improve Logs, Use Corelation ID
+#     logger.info("Calculating risk and positive factors based on prediction result and input data")
+
+#     risk_factors: list[dict] = []
+#     positive_factors: list[dict] = []
+
+#     credit_score = payload["credit_score"]
+#     income = payload["income"]
+#     existing_loans = payload["existing_loans"]
+#     employed = payload["employed"]
+#     employment_type = payload["employment_type"]
+
+#     emi_to_income_ratio = payload["emi_to_income_ratio"]
+#     loan_to_income_ratio = payload["loan_to_income_ratio"]
+
+
+#     # Credit Score Analysis
+    
+#     if credit_score < 600:
+#         risk_factors.append(
+#             {
+#                 "factor": "Low Credit Score",
+#                 "value": credit_score,
+#             }
+#         )
+
+#     elif credit_score < 700:
+#         risk_factors.append(
+#             {
+#                 "factor": "Moderate Credit Score",
+#                 "value": credit_score,
+#             }
+#         )
+
+#     elif credit_score >= 750:
+#         positive_factors.append(
+#             {
+#                 "factor": "Strong Credit Profile",
+#                 "value": credit_score,
+#             }
+#         )
+
+    
+#     # EMI Burden Analysis
+    
+#     if emi_to_income_ratio >= 0.45:
+#         risk_factors.append(
+#             {
+#                 "factor": "High EMI Burden",
+#                 "value": f"{emi_to_income_ratio * 100:.2f}%",
+#             }
+#         )
+
+#     elif emi_to_income_ratio >= 0.30:
+#         risk_factors.append(
+#             {
+#                 "factor": "Moderate EMI Burden",
+#                 "value": f"{emi_to_income_ratio * 100:.2f}%",
+#             }
+#         )
+
+#     else:
+#         positive_factors.append(
+#             {
+#                 "factor": "Manageable EMI Burden",
+#                 "value": f"{emi_to_income_ratio * 100:.2f}%",
+#             }
+#         )
+
+    
+#     # Loan To Income Ratio Analysis
+    
+#     if loan_to_income_ratio >= 7:
+#         risk_factors.append(
+#             {
+#                 "factor": "High Loan-To-Income Ratio",
+#                 "value": f"{loan_to_income_ratio:.2f}x monthly income",
+#             }
+#         )
+
+#     elif loan_to_income_ratio >= 5:
+#         risk_factors.append(
+#             {
+#                 "factor": "Moderate Loan-To-Income Ratio",
+#                 "value": f"{loan_to_income_ratio:.2f}x monthly income",
+#             }
+#         )
+
+#     else:
+#         positive_factors.append(
+#             {
+#                 "factor": "Healthy Loan-To-Income Ratio",
+#                 "value": f"{loan_to_income_ratio:.2f}x monthly income",
+#             }
+#         )
+
+    
+#     # Existing Loans Analysis
+    
+#     if existing_loans >= 4:
+#         risk_factors.append(
+#             {
+#                 "factor": "Multiple Existing Loans",
+#                 "value": existing_loans,
+#             }
+#         )
+
+#     elif existing_loans <= 1:
+#         positive_factors.append(
+#             {
+#                 "factor": "Limited Existing Debt Obligations",
+#                 "value": existing_loans,
+#             }
+#         )
+
+    
+#     # Employment Status Analysis
+    
+#     if not employed:
+#         risk_factors.append(
+#             {
+#                 "factor": "No Active Employment",
+#                 "value": employed,
+#             }
+#         )
+
+#     else:
+#         positive_factors.append(
+#             {
+#                 "factor": "Active Employment",
+#                 "value": employed,
+#             }
+#         )
+
+    
+#     # Employment Stability Analysis
+    
+#     if (
+#         employment_type == "Gig Worker"
+#         and income < 25000
+#     ):
+#         risk_factors.append(
+#             {
+#                 "factor": "Variable Income Stability",
+#                 "value": {
+#                     "employment_type": employment_type,
+#                     "income": f"₹ {income:,}",
+#                 },
+#             }
+#         )
+
+#     elif (
+#         employment_type == "Self-Employed"
+#         and income < 60000
+#     ):
+#         risk_factors.append(
+#             {
+#                 "factor": "Variable Income Stability",
+#                 "value": {
+#                     "employment_type": employment_type,
+#                     "income": f"₹ {income:,}",
+#                 },
+#             }
+#         )
+
+    
+#     # Positive Employment Profiles
+    
+#     if employment_type == "Government":
+#         positive_factors.append(
+#             {
+#                 "factor": "Stable Employment Profile",
+#                 "value": employment_type,
+#             }
+#         )
+
+#     elif employment_type == "Salaried":
+#         positive_factors.append(
+#             {
+#                 "factor": "Consistent Income Source",
+#                 "value": employment_type,
+#             }
+#         )
+
+#     logger.info(
+#         f"\n\nRisk factors identified: {len(risk_factors)}, "
+#         f"Positive factors identified: {len(positive_factors)}\n\n"
+#     )
+
+#     return {
+#         "default": predicted_result["default"],
+#         "probability": predicted_result["probability"],
+#         "risk_factors": risk_factors,
+#         "positive_factors": positive_factors,
+#     }
+    
+
+# def risk_calculation(predicted_result: dict, payload: dict) -> dict:
+#     model = get_current_model()
+
+#     if model is None:
+#         raise RuntimeError("No model is currently loaded.")
+
+#     input_df = pd.DataFrame([payload])
+
+#     input_df["employed"] = input_df["employed"].astype(int)
+#     input_df["employment_type"] = input_df["employment_type"].map(EMPLOYMENT_MAP)
+
+#     input_df = input_df[[
+#         "age",
+#         "income",
+#         "credit_score",
+#         "existing_loans",
+#         "existing_loan_emi",
+#         "employed",
+#         "loan_amount",
+#         "loan_tenure_months",
+#         "emi_to_income_ratio",
+#         "loan_to_income_ratio",
+#         "employment_type"
+#     ]]
+
+#     explainer = shap.TreeExplainer(model)
+#     shap_values = explainer(input_df)
+
+#     shap_result = pd.DataFrame({
+#         "feature": input_df.columns,
+#         "value": input_df.iloc[0].values,
+#         "shap_value": shap_values.values[0]
+#     })
+
+#     shap_result["abs_shap"] = shap_result["shap_value"].abs()
+#     shap_result = shap_result.sort_values("abs_shap", ascending=False)
+
+#     risk_factors = []
+#     positive_factors = []
+
+#     for _, row in shap_result.iterrows():
+#         factor = {
+#             "feature": row["feature"],
+#             "value": row["value"],
+#             "shap_value": round(float(row["shap_value"]), 4)
+#         }
+
+#         if row["shap_value"] > 0:
+#             risk_factors.append(factor)
+#         elif row["shap_value"] < 0:
+#             positive_factors.append(factor)
+#     print("\n\n---------------------------------\n\n")            
+#     print({
+#         "default": predicted_result["default"],
+#         "probability": predicted_result["probability"],
+#         "risk_factors": risk_factors,
+#         "positive_factors": positive_factors
+#     }    )
+#     print("\n\n---------------------------------\n\n") 
+#     return {
+#         "default": predicted_result["default"],
+#         "probability": predicted_result["probability"],
+#         "risk_factors": risk_factors,
+#         "positive_factors": positive_factors
+#     }    
+    
+    
 def risk_calculation(predicted_result: dict, payload: dict) -> dict:
-    # Improve Logs, Use Corelation ID
-    logger.info("Calculating risk and positive factors based on prediction result and input data")
+    model = get_current_model()
 
-    risk_factors: list[dict] = []
-    positive_factors: list[dict] = []
+    if model is None:
+        raise RuntimeError("No model is currently loaded.")
 
-    credit_score = payload["credit_score"]
-    income = payload["income"]
-    existing_loans = payload["existing_loans"]
-    employed = payload["employed"]
-    employment_type = payload["employment_type"]
+    input_df = pd.DataFrame([payload])
 
-    emi_to_income_ratio = payload["emi_to_income_ratio"]
-    loan_to_income_ratio = payload["loan_to_income_ratio"]
+    input_df["employed"] = input_df["employed"].astype(int)
+    input_df["employment_type"] = input_df["employment_type"].map(EMPLOYMENT_MAP)
 
+    input_df = input_df[[
+        "age",
+        "income",
+        "credit_score",
+        "existing_loans",
+        "existing_loan_emi",
+        "employed",
+        "loan_amount",
+        "loan_tenure_months",
+        "emi_to_income_ratio",
+        "loan_to_income_ratio",
+        "employment_type"
+    ]]
 
-    # Credit Score Analysis
-    
-    if credit_score < 600:
-        risk_factors.append(
-            {
-                "factor": "Low Credit Score",
-                "value": credit_score,
-            }
-        )
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer(input_df)
 
-    elif credit_score < 700:
-        risk_factors.append(
-            {
-                "factor": "Moderate Credit Score",
-                "value": credit_score,
-            }
-        )
+    shap_result = pd.DataFrame({
+        "feature": input_df.columns,
+        "value": input_df.iloc[0].values,
+        "shap_value": shap_values.values[0]
+    })
 
-    elif credit_score >= 750:
-        positive_factors.append(
-            {
-                "factor": "Strong Credit Profile",
-                "value": credit_score,
-            }
-        )
+    shap_result["abs_shap"] = shap_result["shap_value"].abs()
+    shap_result = shap_result.sort_values("abs_shap", ascending=False)
 
-    
-    # EMI Burden Analysis
-    
-    if emi_to_income_ratio >= 0.45:
-        risk_factors.append(
-            {
-                "factor": "High EMI Burden",
-                "value": f"{emi_to_income_ratio * 100:.2f}%",
-            }
-        )
+    shap_analysis = []
 
-    elif emi_to_income_ratio >= 0.30:
-        risk_factors.append(
-            {
-                "factor": "Moderate EMI Burden",
-                "value": f"{emi_to_income_ratio * 100:.2f}%",
-            }
-        )
-
-    else:
-        positive_factors.append(
-            {
-                "factor": "Manageable EMI Burden",
-                "value": f"{emi_to_income_ratio * 100:.2f}%",
-            }
-        )
-
-    
-    # Loan To Income Ratio Analysis
-    
-    if loan_to_income_ratio >= 7:
-        risk_factors.append(
-            {
-                "factor": "High Loan-To-Income Ratio",
-                "value": f"{loan_to_income_ratio:.2f}x monthly income",
-            }
-        )
-
-    elif loan_to_income_ratio >= 5:
-        risk_factors.append(
-            {
-                "factor": "Moderate Loan-To-Income Ratio",
-                "value": f"{loan_to_income_ratio:.2f}x monthly income",
-            }
-        )
-
-    else:
-        positive_factors.append(
-            {
-                "factor": "Healthy Loan-To-Income Ratio",
-                "value": f"{loan_to_income_ratio:.2f}x monthly income",
-            }
-        )
-
-    
-    # Existing Loans Analysis
-    
-    if existing_loans >= 4:
-        risk_factors.append(
-            {
-                "factor": "Multiple Existing Loans",
-                "value": existing_loans,
-            }
-        )
-
-    elif existing_loans <= 1:
-        positive_factors.append(
-            {
-                "factor": "Limited Existing Debt Obligations",
-                "value": existing_loans,
-            }
-        )
-
-    
-    # Employment Status Analysis
-    
-    if not employed:
-        risk_factors.append(
-            {
-                "factor": "No Active Employment",
-                "value": employed,
-            }
-        )
-
-    else:
-        positive_factors.append(
-            {
-                "factor": "Active Employment",
-                "value": employed,
-            }
-        )
-
-    
-    # Employment Stability Analysis
-    
-    if (
-        employment_type == "Gig Worker"
-        and income < 25000
-    ):
-        risk_factors.append(
-            {
-                "factor": "Variable Income Stability",
-                "value": {
-                    "employment_type": employment_type,
-                    "income": f"₹ {income:,}",
-                },
-            }
-        )
-
-    elif (
-        employment_type == "Self-Employed"
-        and income < 60000
-    ):
-        risk_factors.append(
-            {
-                "factor": "Variable Income Stability",
-                "value": {
-                    "employment_type": employment_type,
-                    "income": f"₹ {income:,}",
-                },
-            }
-        )
-
-    
-    # Positive Employment Profiles
-    
-    if employment_type == "Government":
-        positive_factors.append(
-            {
-                "factor": "Stable Employment Profile",
-                "value": employment_type,
-            }
-        )
-
-    elif employment_type == "Salaried":
-        positive_factors.append(
-            {
-                "factor": "Consistent Income Source",
-                "value": employment_type,
-            }
-        )
-
-    logger.info(
-        f"\n\nRisk factors identified: {len(risk_factors)}, "
-        f"Positive factors identified: {len(positive_factors)}\n\n"
-    )
-
+    for _, row in shap_result.iterrows():
+        shap_analysis.append({
+            "feature": row["feature"],
+            "value": row["value"],
+            "shap_value": round(float(row["shap_value"]), 4)
+        })
+    print("\n\n---------------------------------\n\n") 
+    print({
+        "default": predicted_result["default"],
+        "probability": predicted_result["probability"],
+        "shap_analysis": shap_analysis
+    }    )
+    print("\n\n---------------------------------\n\n") 
     return {
         "default": predicted_result["default"],
         "probability": predicted_result["probability"],
-        "risk_factors": risk_factors,
-        "positive_factors": positive_factors,
-    }
+        "shap_analysis": shap_analysis
+    }    
+    
+    
+def format_shap_analysis(shap_analysis: list[dict]) -> str:
+    formatted_analysis = []
+
+    for factor in shap_analysis:
+        feature = factor["feature"]
+        value = factor["value"]
+        shap_value = factor["shap_value"]
+
+        if feature in {"income", "existing_loan_emi", "loan_amount"}:
+            formatted_value = f"₹ {value:,.0f}"
+
+        elif feature == "emi_to_income_ratio":
+            formatted_value = f"{value * 100:.2f}% of monthly income"
+
+        elif feature == "loan_to_income_ratio":
+            formatted_value = f"{value:.2f}x monthly income"
+
+        elif feature == "loan_tenure_months":
+            formatted_value = f"{value:.0f} months"
+
+        else:
+            formatted_value = str(value)
+
+        formatted_analysis.append(
+            f"- {feature}: {formatted_value} (SHAP: {shap_value:+.4f})"
+        )
+    print("\n\n----------\n\n")
+    print("\n".join(formatted_analysis))
+    print("\n\n----------\n\n")
+    return "\n".join(formatted_analysis)    
+    
     
     
 # Calculate emi_to_income_ratio loan_to_income_ratio
-
 def ratio_calculation(payload: dict): 
     """
     Calculates EMI and loan ratios,
