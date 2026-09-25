@@ -15,6 +15,7 @@ from src.utils.drift_helper import parse_drift_metrics
 
 groq_client = GroqClient()
 
+# Generating Loan assessment
 def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
 
     logger.info("Generating loan assessment using LLM")
@@ -40,7 +41,6 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
         user_prompt=user_prompt,
         max_tokens=1000
     )
-    print("LLM RAW RESPONSE:", repr(assessment))
     return assessment
 
 
