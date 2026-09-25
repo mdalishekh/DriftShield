@@ -81,120 +81,12 @@ Your only task is to transform the provided prediction and SHAP analysis into a 
 
 
 
-# def loan_advisor_prompt(
-#     default: bool,
-#     probability: float,
-#     shap_analysis_result,
-#     loan_suggestion: dict | None = None
-# ) -> str:
-
-    
-#     logger.info(f"LOAN SUGGESTION: {loan_suggestion}")
-    
-#     risk_text = "\n".join(
-#         [
-#             f"- {factor['factor']}: {factor['value']}"
-#             for factor in risk_factors
-#         ]
-#     ) if risk_factors else "None"
-
-#     positive_text = "\n".join(
-#         [
-#             f"- {factor['factor']}: {factor['value']}"
-#             for factor in positive_factors
-#         ]
-#     ) if positive_factors else "None"
-
-#     suggestion_text = ""
-
-#     if loan_suggestion:
-
-#         suggested_amount = (
-#             f"₹ {loan_suggestion['suggested_loan_amount']:,.0f}"
-#         )
-
-#         suggestion_text = f"""
-#         Loan Recommendation Available:
-
-#         - Suggested Loan Amount: {suggested_amount}
-#         - Suggested Tenure: {loan_suggestion['suggested_tenure']} months
-#         - Predicted Default Probability: {loan_suggestion['predicted_probability'] * 100:.2f}%
-#         """
-
-#     else:
-
-#         suggestion_text = """
-#             Loan Recommendation:
-#             Not Available
-#             """
-
-#     prompt = f"""
-#     Prediction Summary:
-
-#     - Predicted Default Risk: {default}
-#     - Predicted Default Probability: {probability}%
-
-#     Risk Factors:
-#     {risk_text}
-
-#     Positive Factors:
-#     {positive_text}
-
-#     {suggestion_text}
-
-#     Instructions:
-
-#     - Evaluate both risk factors and positive factors before forming a conclusion.
-#     - Use the provided values naturally when they strengthen the explanation.
-#     - Focus primarily on the most important drivers of repayment risk or repayment strength.
-#     - Avoid repeating information that is already implied by another factor.
-#     - Prioritize clarity over completeness.
-#     - If the loan recommendation section is marked as "Not Available", do not mention:
-#     * alternative loan amounts
-#     * suggested loan amounts
-#     * repayment tenures
-#     * lower-risk loan configurations
-#     * approval improvements
-
-#     If a loan recommendation is provided, you MUST mention:
-#     - the suggested loan amount
-#     - the suggested tenure
-#     - the reduced default probability
-#     Do not omit any of these values when a recommendation is present.
-
-#     Output Requirements:
-
-#     - Return ONLY one plain-text paragraph.
-#     - No bullet points.
-#     - No markdown.
-#     - No headings.
-#     - No JSON.
-#     - No numbered lists.
-#     - No greetings.
-#     - Keep the response between 50 and 90 words.
-#     - Use natural, professional banking language.
-#     - Vary sentence structure naturally.
-#     - Avoid repetitive templates.
-
-#     Generate the final customer-facing assessment.
-#     """
-
-#     return prompt
-
 def loan_advisor_prompt(
     default: bool,
     probability: float,
-    shap_analysis: list[dict],
+    shap_analysis: str,
     loan_suggestion: dict | None = None
 ) -> str:
-
-    shap_text = "\n".join(
-        [
-            f"- {factor['feature']}: {factor['value']} "
-            f"(SHAP: {factor['shap_value']:+.4f})"
-            for factor in shap_analysis
-        ]
-    )
 
     suggestion_text = ""
 
@@ -202,12 +94,12 @@ def loan_advisor_prompt(
         suggested_amount = f"₹ {loan_suggestion['suggested_loan_amount']:,.0f}"
 
         suggestion_text = f"""
-Loan Recommendation Available:
+    Loan Recommendation Available:
 
-- Suggested Loan Amount: ₹ {suggested_amount}
-- Suggested Tenure: {loan_suggestion['suggested_tenure']} months
-- Predicted Default Probability: {loan_suggestion['predicted_probability'] * 100:.2f}%
-"""
+    - Suggested Loan Amount:₹ {suggested_amount}
+    - Suggested Tenure: {loan_suggestion['suggested_tenure']} months
+    - Predicted Default Probability: {loan_suggestion['predicted_probability'] * 100:.2f}%
+    """
 
     else:
         suggestion_text = """
@@ -216,53 +108,68 @@ Loan Recommendation Available:
         """
 
     prompt = f"""
-Prediction Summary:
+    Prediction Summary:
 
-- Predicted Default Risk: {default}
-- Predicted Default Probability: {probability}%
+    - Predicted Default Risk: {default}
+    - Predicted Default Probability: {probability}%
 
-SHAP Analysis:
-{shap_text}
+    SHAP Analysis:
+    {shap_analysis}
 
-{suggestion_text}
+    {suggestion_text}
 
-Instructions:
+    Instructions:
 
-- Use the SHAP analysis as the primary source for explaining the prediction.
-- Identify the most influential factors based on their SHAP values.
-- Positive SHAP values indicate factors pushing the model toward the default prediction.
-- Negative SHAP values indicate factors pushing the model away from the default prediction.
-- Explain both the strongest contributing factors and important counteracting factors when relevant.
-- Do not invent risk factors that are not present in the SHAP analysis.
-- Do not make a prediction different from the supplied model prediction.
-- Explain the model's reasoning, rather than independently assessing the applicant.
-- Use the actual feature values naturally when explaining the factors.
-- Prioritize the strongest SHAP contributors instead of mentioning every feature.
-- Avoid unnecessary repetition.
+    - Use the SHAP analysis as the primary source for explaining the prediction.
+    - Identify the most influential factors based on their SHAP values.
+    - Positive SHAP values indicate factors pushing the model toward the default prediction.
+    - Negative SHAP values indicate factors pushing the model away from the default prediction.
+    - Explain both the strongest contributing factors and important counteracting factors when relevant.
+    - Do not invent risk factors that are not present in the SHAP analysis.
+    - Do not make a prediction different from the supplied model prediction.
+    - Explain the model's reasoning, rather than independently assessing the applicant.
+    - Use the actual feature values naturally when explaining the factors.
+    - Prioritize the strongest SHAP contributors instead of mentioning every feature.
+    - Avoid unnecessary repetition.
 
-If a loan recommendation is provided, mention:
-- the suggested loan amount
-- the suggested tenure
-- the predicted default probability for that recommendation
+    Ratio Interpretation:
 
-If a loan recommendation is not available, do not mention alternative loan amounts, repayment tenures, or lower-risk loan configurations.
+    - EMI-to-income ratio represents the percentage of the applicant's monthly income already being used for existing loan EMIs.
+    - Loan-to-income ratio represents how many times the requested loan amount is compared with the applicant's monthly income.
+    - Express EMI-to-income ratio as a percentage.
+    - Express loan-to-income ratio as a multiple using "x".
+    - Do not reinterpret or calculate these ratios differently from the values provided in the SHAP analysis.
 
-Output Requirements:
+    Currency:
 
-- Return ONLY one plain-text paragraph.
-- No bullet points.
-- No markdown.
-- No headings.
-- No JSON.
-- No numbered lists.
-- No greetings.
-- Keep the response between 50 and 90 words.
-- Use natural, professional banking language.
+    - All monetary values are in Indian Rupees.
+    - Always use the ₹ symbol for monetary values.
+    - Never use $, €, £, or any other currency symbol.
 
-Generate the final customer-facing assessment.
-"""
+    If a loan recommendation is provided, mention:
+    - the suggested loan amount
+    - the suggested tenure
+    - the predicted default probability for that recommendation
+
+    If a loan recommendation is not available, do not mention alternative loan amounts, repayment tenures, or lower-risk loan configurations.
+
+    Output Requirements:
+
+    - Return ONLY one plain-text paragraph.
+    - No bullet points.
+    - No markdown.
+    - No headings.
+    - No JSON.
+    - No numbered lists.
+    - No greetings.
+    - Keep the response between 50 and 90 words.
+    - Use natural, professional banking language.
+
+    Generate the final customer-facing assessment.
+    """
 
     return prompt
+
 
 
 # Data Drift :- System Context
@@ -351,34 +258,13 @@ TARGET LENGTH
 def build_drift_prompt(parsed_metrics):
 
     status = parsed_metrics["status"]
-
-    drift_percentage = parsed_metrics[
-        "drift_percentage"
-    ]
-
-    drifted_columns_count = parsed_metrics[
-        "drifted_columns_count"
-    ]
-
-    total_columns = parsed_metrics[
-        "total_columns"
-    ]
-
-    stable_columns_count = parsed_metrics[
-        "stable_columns_count"
-    ]
-
-    drifted_columns = parsed_metrics[
-        "drifted_columns"
-    ]
-
-    stable_columns = parsed_metrics[
-        "stable_columns"
-    ]
-
-    top_drift_columns = parsed_metrics[
-        "top_drift_columns"
-    ]
+    drift_percentage = parsed_metrics["drift_percentage"]
+    drifted_columns_count = parsed_metrics["drifted_columns_count"]
+    total_columns = parsed_metrics["total_columns"]
+    stable_columns_count = parsed_metrics["stable_columns_count"]
+    drifted_columns = parsed_metrics["drifted_columns"]
+    stable_columns = parsed_metrics["stable_columns"]
+    top_drift_columns = parsed_metrics["top_drift_columns"]
 
     drifted_feature_names = "\n".join(
         f"- {column['column']}"
