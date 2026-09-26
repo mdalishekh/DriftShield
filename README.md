@@ -139,9 +139,8 @@ This approach separates model lifecycle management from application logic, enabl
 ## Workflow Summary
 
 1.  The user uploads a new model package from the Streamlit Model Registry interface.
-2.  Four required artifacts are submitted:
-    -   Trained Model (`*_model.pkl`)
-    -   Feature Scaler (`*_scaler.pkl`)
+2.  Three required artifacts are submitted:
+    -   Trained Model (`*_model.json`)
     -   Model Metrics (`*_metrics.json`)
     -   Reference Dataset (`*_reference.csv`)
 3.  The backend validates filenames, artifact types, and deployment requirements.
