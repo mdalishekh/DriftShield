@@ -62,9 +62,7 @@ def insert_model_metadata(**kwargs)-> ModelRegistry:
 def get_model_by_id(model_id: int) -> ModelRegistry | None:
 
     with db_connect() as db:
-
         logger.info(f"Fetching record details for ID: {model_id}")
-
         try:
 
             model_record = (
@@ -90,15 +88,10 @@ def get_model_by_id(model_id: int) -> ModelRegistry | None:
 def get_all_models() -> list[ModelRegistry]:
 
     with db_connect() as db:
-
         logger.info("Fetching all registered models")
-
         try:
-
             models = db.query(ModelRegistry).all()
-
             logger.info(f"Successfully fetched {len(models)} model records")
-
             return models
 
         except Exception:
@@ -110,9 +103,7 @@ def get_all_models() -> list[ModelRegistry]:
 def delete_model_record(model_id: int) -> None:
 
     with db_connect() as db:
-
         logger.info(f"Deleting model record for ID: {model_id}")
-
         try:
 
             model_record = (
@@ -140,9 +131,7 @@ def delete_model_record(model_id: int) -> None:
 def get_active_model() -> ModelRegistry | None:
 
     with db_connect() as db:
-
         logger.info("Fetching active model")
-
         try:
 
             active_model = (
@@ -156,7 +145,6 @@ def get_active_model() -> ModelRegistry | None:
                 return active_model
 
             logger.warning("No active model found in database")
-
             return None
 
         except Exception:
@@ -174,7 +162,6 @@ def switch_active_model(
     with db_connect() as db:
 
         logger.info(f"Switching active model from ID {current_active_id} to ID {new_active_id}")
-
         try:
 
             current_active_model = (
@@ -197,7 +184,6 @@ def switch_active_model(
                 new_active_model.activated_at = datetime.now()
 
             db.commit()
-
             logger.info(f"Successfully activated model ID: {new_active_id}")
 
         except Exception:
@@ -210,9 +196,7 @@ def switch_active_model(
 def get_first_model() -> ModelRegistry | None:
 
     with db_connect() as db:
-
         logger.info("Fetching first model record")
-
         try:
 
             model_record = (
@@ -251,23 +235,16 @@ def activate_initial_model(
             )
 
             if model_record is None:
-
                 logger.warning(f"No model found for ID: {model_id}")
-
                 return
 
             model_record.is_active = True
             model_record.activated_at = datetime.now()
-
             db.commit()
-
             logger.info(f"Initial model activated successfully. ID: {model_id}")
 
         except Exception:
-
             db.rollback()
-
             logger.exception(f"Failed to activate initial model ID: {model_id}")
-
             raise        
         
