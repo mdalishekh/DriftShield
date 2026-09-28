@@ -9,3 +9,17 @@ class ENV:
     GROQ_MODEL = os.getenv("GROQ_MODEL")
     DATABASE_URL = os.getenv("DATABASE_URL")
     
+
+EXPECTED_FEATURES = [
+    "age",
+    "income",
+    "credit_score",
+    "existing_loans",
+    "existing_loan_emi",
+    "employed",
+    "loan_amount",
+    "loan_tenure_months",
+    "emi_to_income_ratio",
+    "loan_to_income_ratio",
+    "employment_type"
+]

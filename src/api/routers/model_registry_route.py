@@ -21,6 +21,7 @@ from src.database.db_ops import (
     )
 from src.models.load_models import load_model_into_memory
 from src.utils.logs_handler import logger
+from src.models.validate_models import validate_model_artifacts
 
 router = APIRouter(
     prefix="/models",
@@ -108,6 +109,37 @@ async def upload_models(
 
         logger.info("Model, metrics and reference CSV files uploaded successfully")
 
+
+        # Validate uploaded artifacts
+        validation_result = validate_model_artifacts(
+            model_path=model_path,
+            metrics_path=metrics_path,
+            reference_path=reference_path
+        )
+
+        if not validation_result["valid"]:
+            logger.warning(
+                f"Model artifact validation failed - "
+                f"{validation_result['artifact']}: "
+                f"{validation_result['message']}"
+            )
+
+            model_path.unlink(missing_ok=True)
+            metrics_path.unlink(missing_ok=True)
+            reference_path.unlink(missing_ok=True)
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "artifact": validation_result["artifact"],
+                    "message": validation_result["message"]
+                }
+            )
+
+        else:
+            logger.info("Model artifacts validated successfully")
+
+        
         # Register model metadata
         new_model = insert_model_metadata(
             model_name=model_filename,
@@ -122,11 +154,12 @@ async def upload_models(
                 activate_initial_model(new_model.id)
                 logger.info(f"Model {new_model.model_name} activated successfully")
 
-            except FileNotFoundError as e:
-                logger.warning(f"First model files not found: {e}")
-
             except Exception:
                 logger.exception(f"Failed to load first model: {new_model.model_name}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Model was uploaded but could not be activated."
+                )
 
         return {
             "status": "success",
@@ -146,6 +179,64 @@ async def upload_models(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to upload model files."
         )
+     
+     
+        
+# Activating any specific Model - API     
+@router.put("/activate/{model_id}")
+def activate_model(model_id: int):
+
+    logger.info(f"Activation request received for model ID: {model_id}")
+
+    try:
+        # Getting model details
+        model_record = get_model_by_id(model_id)
+
+        if model_record is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No model found for ID {model_id}"
+            )
+
+        if model_record.is_active:
+            return {
+                "status": "warning",
+                "message": "Selected model is already active."
+            }
+
+        # Loads new model into application's Memory
+        load_model_into_memory(model_name=model_record.model_name)
+
+        # Getting currently loaded model details
+        current_active_model = get_active_model()
+
+        # Updates model status in database
+        switch_active_model(
+            current_active_id=current_active_model.id,
+            new_active_id=model_record.id
+        )
+
+        logger.info(f"Model activated successfully. ID: {model_id}")
+
+        return {
+            "status": "success",
+            "message": "Model activated successfully.",
+            "model_id": model_record.id,
+            "model_name": model_record.model_name,
+            "reference_csv_name": model_record.reference_csv_name
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.exception(f"Failed to activate model ID: {model_id}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to activate model."
+        )        
+
         
         
 # Getting list of all Model - API
@@ -241,63 +332,4 @@ def delete_model(model_id: int):
             detail="Failed to delete model."
         )
         
-        
-# Activating any specific Model - API     
-@router.put("/activate/{model_id}")
-def activate_model(model_id: int):
 
-    logger.info(f"Activation request received for model ID: {model_id}")
-
-    try:
-        # Getting model details
-        model_record = get_model_by_id(model_id)
-
-        if model_record is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No model found for ID {model_id}"
-            )
-
-        if model_record.is_active:
-            return {
-                "status": "warning",
-                "message": "Selected model is already active."
-            }
-
-        # Loads new model into application's Memory
-        load_model_into_memory(model_name=model_record.model_name)
-
-        # Getting currently loaded model details
-        current_active_model = get_active_model()
-
-        # Updates model status in database
-        switch_active_model(
-            current_active_id=current_active_model.id,
-            new_active_id=model_record.id
-        )
-
-        logger.info(f"Model activated successfully. ID: {model_id}")
-
-        return {
-            "status": "success",
-            "message": "Model activated successfully.",
-            "model_id": model_record.id,
-            "model_name": model_record.model_name,
-            "reference_csv_name": model_record.reference_csv_name
-        }
-
-    except HTTPException:
-        raise
-
-    except Exception:
-        logger.exception(f"Failed to activate model ID: {model_id}")
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to activate model."
-        )        
-
-# Not in use for now
-@router.post("/data-pipeline")
-def data_processing_pipeline():
-    return None 
