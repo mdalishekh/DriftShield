@@ -64,11 +64,7 @@ async def get_drift_insights():
         }
 
     except Exception as e:
-
-        logger.exception(
-            "Failed to generate drift insights"
-        )
-
+        logger.exception("Failed to generate drift insights")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate drift insights."
