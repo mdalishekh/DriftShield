@@ -296,18 +296,42 @@ def delete_model(model_id: int):
             )
 
         project_root = Path(__file__).resolve().parents[3]
-        model_path = (project_root/"models"/model_record.model_name)
-        metrics_path = (project_root/"metrics"/model_record.metrics_name)
-        reference_csv_path = (project_root/"csv"/model_record.reference_csv_name)
 
+        model_path = project_root / "models" / model_record.model_name
+        metrics_path = project_root / "metrics" / model_record.metrics_name
+        reference_csv_path = project_root / "csv" / model_record.reference_csv_name
+
+        # Verify all registered files exist before deletion
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"Model file not found: {model_record.model_name}"
+            )
+
+        if not metrics_path.exists():
+            raise FileNotFoundError(
+                f"Metrics file not found: {model_record.metrics_name}"
+            )
+
+        if not reference_csv_path.exists():
+            raise FileNotFoundError(
+                f"Reference CSV not found: {model_record.reference_csv_name}"
+            )
+
+        # Delete model artifacts
         model_path.unlink()
         metrics_path.unlink()
         reference_csv_path.unlink()
 
         logger.info(f"Files deleted successfully for model ID: {model_id}")
 
-        # Deleting specific Model by it's ID
-        delete_model_record(model_id)
+        # Delete model metadata
+        record_deleted = delete_model_record(model_id)
+
+        if not record_deleted:
+            raise RuntimeError(
+                f"Model files were deleted but database record "
+                f"was not deleted for ID: {model_id}"
+            )
 
         return {
             "status": "success",
@@ -316,6 +340,7 @@ def delete_model(model_id: int):
                 "id": model_record.id,
                 "model_name": model_record.model_name,
                 "metrics_name": model_record.metrics_name,
+                "reference_csv_name": model_record.reference_csv_name,
                 "uploaded_at": model_record.uploaded_at,
                 "activated_at": model_record.activated_at,
                 "is_active": model_record.is_active
@@ -325,11 +350,16 @@ def delete_model(model_id: int):
     except HTTPException:
         raise
 
+    except FileNotFoundError as e:
+        logger.error(f"Model deletion failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+
     except Exception:
         logger.exception(f"Failed to delete model ID: {model_id}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete model."
         )
-        
-

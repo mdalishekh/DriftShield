@@ -100,12 +100,12 @@ def get_all_models() -> list[ModelRegistry]:
         
         
 
-def delete_model_record(model_id: int) -> None:
+def delete_model_record(model_id: int) -> bool:
 
     with db_connect() as db:
         logger.info(f"Deleting model record for ID: {model_id}")
-        try:
 
+        try:
             model_record = (
                 db.query(ModelRegistry)
                 .filter(ModelRegistry.id == model_id)
@@ -114,17 +114,18 @@ def delete_model_record(model_id: int) -> None:
 
             if model_record is None:
                 logger.warning(f"No model record found for ID: {model_id}")
-                return
+                return False
 
             db.delete(model_record)
             db.commit()
 
             logger.info(f"Model record deleted successfully for ID: {model_id}")
+            return True
 
         except Exception:
             db.rollback()
             logger.exception(f"Failed to delete model record for ID: {model_id}")
-            raise        
+            raise       
         
         
 
