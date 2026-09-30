@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
         # CASE 1 - Active model available
         if active_model is not None:
 
-            logger.info(f"Active model found: {active_model.model_name}")
+            logger.info(f"Active model found - {active_model.model_name}")
 
             try:
                 load_model_into_memory(model_name=active_model.model_name)
@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
                 logger.warning(f"Active model files not found: {e}")
 
             except Exception as e:
-                logger.exception(f"Failed to load active model: {e}")
+                logger.exception("Failed to load active model")
 
         
         # CASE 2 - No active model, Try first available model
@@ -45,10 +45,7 @@ async def lifespan(app: FastAPI):
 
             first_model = get_first_model()
             if first_model is not None:
-                logger.info(
-                    f"Loading first available model: "
-                    f"{first_model.model_name}"
-                )
+                logger.info( f"Loading first available model - {first_model.model_name}")
 
                 try:
                     load_model_into_memory(model_name=first_model.model_name)
@@ -65,7 +62,7 @@ async def lifespan(app: FastAPI):
                     logger.warning(f"First model files not found: {e}")
 
                 except Exception as e:
-                    logger.exception(f"Failed to load first model: {e}")
+                    logger.exception("Failed to load first model")
 
             
             # CASE 3 -  Empty Database (Application 1st boot)
@@ -78,7 +75,7 @@ async def lifespan(app: FastAPI):
         yield
 
     except Exception as e:
-        logger.exception(f"Unexpected startup error: {e}")
+        logger.exception("Unexpected application startup error")
         yield
 
     finally:
@@ -92,6 +89,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Mounting files for External Services
 app.mount(
     "/reports",
     StaticFiles(directory="reports"),
@@ -127,9 +125,9 @@ def readiness_check():
 # [ATTENTION NEEDED :- Update url and place v2]
 # final endpoint will be https://{hostname}/api/v2/{routers prefix}/{endpoint}
 
-app.include_router(prediction_route.router, prefix="/api/v1")
-app.include_router(model_registry_route.router, prefix="/api/v1")
-app.include_router(drift_route.router, prefix="/api/v1")
+app.include_router(prediction_route.router, prefix="/api/v2")
+app.include_router(model_registry_route.router, prefix="/api/v2")
+app.include_router(drift_route.router, prefix="/api/v2")
 
 # Registering Middleware
 app.middleware("http")(request_id_middleware)

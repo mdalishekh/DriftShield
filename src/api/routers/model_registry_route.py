@@ -29,8 +29,6 @@ router = APIRouter(
 )
 
 
-# Exception handling and status code to be added very soon
-
 # Uploading New Models into the application - API
 @router.post("/upload")
 async def upload_models(
@@ -101,14 +99,13 @@ async def upload_models(
         is_first_model = get_first_model() is None
 
         # Save uploaded files
-        logger.info("Uploading model, metrics and reference CSV files")
+        logger.info("Model artifacts upload started")
 
         model_path.write_bytes(await model_file.read())
         metrics_path.write_bytes(await metrics_file.read())
         reference_path.write_bytes(await reference_csv.read())
 
-        logger.info("Model, metrics and reference CSV files uploaded successfully")
-
+        logger.info("Model artifacts uploaded successfully")
 
         # Validate uploaded artifacts
         validation_result = validate_model_artifacts(
@@ -155,7 +152,7 @@ async def upload_models(
                 logger.info(f"Model {new_model.model_name} activated successfully")
 
             except Exception:
-                logger.exception(f"Failed to load first model: {new_model.model_name}")
+                logger.exception(f"Failed to activate first model: {new_model.model_name}")
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Model was uploaded but could not be activated."
@@ -173,7 +170,7 @@ async def upload_models(
         raise
 
     except Exception:
-        logger.exception("Model & Metrics upload failed")
+        logger.exception("Model artifacts upload failed")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -186,7 +183,7 @@ async def upload_models(
 @router.put("/activate/{model_id}")
 def activate_model(model_id: int):
 
-    logger.info(f"Activation request received for model ID: {model_id}")
+    logger.info(f"Model activation requested - ID: {model_id}")
 
     try:
         # Getting model details
@@ -216,7 +213,7 @@ def activate_model(model_id: int):
             new_active_id=model_record.id
         )
 
-        logger.info(f"Model activated successfully. ID: {model_id}")
+        logger.info(f"Model activated successfully - ID: {model_id}")
 
         return {
             "status": "success",
@@ -230,7 +227,7 @@ def activate_model(model_id: int):
         raise
 
     except Exception:
-        logger.exception(f"Failed to activate model ID: {model_id}")
+        logger.exception(f"Model activation failed - ID: {model_id}")
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -243,7 +240,7 @@ def activate_model(model_id: int):
 @router.get("/list")
 def get_models():
 
-    logger.info("Fetching all registered models")
+    logger.info("Model list requested")
 
     try:
         # Getting all available models
@@ -266,7 +263,7 @@ def get_models():
         }
 
     except Exception:
-        logger.exception("Failed to fetch registered models")
+        logger.exception("Model list retrieval failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch registered models."
@@ -277,7 +274,7 @@ def get_models():
 @router.delete("/delete/{model_id}")
 def delete_model(model_id: int):
 
-    logger.info(f"Delete request received for model ID: {model_id}")
+    logger.info(f"Model deletion requested - ID: {model_id}")
 
     try:
         # Getting model details
@@ -322,7 +319,7 @@ def delete_model(model_id: int):
         metrics_path.unlink()
         reference_csv_path.unlink()
 
-        logger.info(f"Files deleted successfully for model ID: {model_id}")
+        logger.info(f"Model files deleted successfully - ID: {model_id}")
 
         # Delete model metadata
         record_deleted = delete_model_record(model_id)
@@ -358,8 +355,9 @@ def delete_model(model_id: int):
         )
 
     except Exception:
-        logger.exception(f"Failed to delete model ID: {model_id}")
+        logger.exception(f"Model deletion failed - ID: {model_id}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete model."
         )
+        

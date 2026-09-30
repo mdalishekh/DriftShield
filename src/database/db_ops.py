@@ -7,8 +7,12 @@ from datetime import datetime
 
 
 # This function inserts Incoming user data in database
-def insert_prediction(payload: dict, predicted_default: bool, probability: float):
-    logger.info("Inserting User Profile in DB")
+def insert_prediction(
+    payload: dict, 
+    predicted_default: bool, 
+    probability: float
+    ):
+    logger.info("Saving prediction result to database")
     # Connecting with Database
     with db_connect() as db:
         
@@ -30,7 +34,7 @@ def insert_prediction(payload: dict, predicted_default: bool, probability: float
         db.add(record)
         db.commit()
         db.refresh(record)
-        logger.info("User Profile inserted in DB")
+        logger.info("Prediction result saved successfully")
     return record
 
 
@@ -43,17 +47,17 @@ def insert_model_metadata(**kwargs)-> ModelRegistry:
     
     # Connecting with Database
     with db_connect() as db:
-        logger.info("Inserting Model & Metrics metadata")
+        logger.info("Saving model metadata to database")
         try:
             model_record = ModelRegistry(**kwargs)
             db.add(model_record)
             db.commit()
             db.refresh(model_record)
-            logger.info("Model & Metrics metadata inserted successfully")
+            logger.info("Model metadata saved successfully")
             return model_record
 
         except Exception as e:
-            logger.exception("Failed to insert Model & Metric metadata")
+            logger.exception("Failed to save model metadata")
             db.rollback()
             raise
         
@@ -63,24 +67,22 @@ def insert_model_metadata(**kwargs)-> ModelRegistry:
 def get_model_by_id(model_id: int) -> ModelRegistry | None:
 
     with db_connect() as db:
-        logger.info(f"Fetching record details for ID: {model_id}")
+        logger.info(f"Fetching model details - ID: {model_id}")
         try:
-
             model_record = (
                 db.query(ModelRegistry)
                 .filter(ModelRegistry.id == model_id)
                 .first()
             )
-
             if model_record:
-                logger.info(f"Record found for ID: {model_id}")
+                logger.info(f"Model found - ID: {model_id}")
                 return model_record
 
-            logger.warning(f"Record does not exist for ID: {model_id}")
+            logger.warning(f"Model not found - ID: {model_id}")
             return None
 
         except Exception:
-            logger.exception(f"Failed to fetch record details for ID: {model_id}")
+            logger.exception(f"Failed to fetch model - ID: {model_id}")
             raise        
         
 
@@ -92,7 +94,7 @@ def get_all_models() -> list[ModelRegistry]:
         logger.info("Fetching all registered models")
         try:
             models = db.query(ModelRegistry).all()
-            logger.info(f"Successfully fetched {len(models)} model records")
+            logger.info(f"Fetched {len(models)} models successfully")
             return models
 
         except Exception:
@@ -104,8 +106,7 @@ def get_all_models() -> list[ModelRegistry]:
 def delete_model_record(model_id: int) -> bool:
 
     with db_connect() as db:
-        logger.info(f"Deleting model record for ID: {model_id}")
-
+        logger.info(f"Deleting model record - ID: {model_id}")
         try:
             model_record = (
                 db.query(ModelRegistry)
@@ -114,18 +115,18 @@ def delete_model_record(model_id: int) -> bool:
             )
 
             if model_record is None:
-                logger.warning(f"No model record found for ID: {model_id}")
+                logger.warning(f"No model record found - ID: {model_id}")
                 return False
 
             db.delete(model_record)
             db.commit()
 
-            logger.info(f"Model record deleted successfully for ID: {model_id}")
+            logger.info(f"Model record deleted successfully - ID: {model_id}")
             return True
 
         except Exception:
             db.rollback()
-            logger.exception(f"Failed to delete model record for ID: {model_id}")
+            logger.exception(f"Failed to delete model record - ID: {model_id}")
             raise       
         
         
@@ -143,10 +144,10 @@ def get_active_model() -> ModelRegistry | None:
             )
 
             if active_model:
-                logger.info(f"Active model found: {active_model.model_name}")
+                logger.info(f"Active model found - {active_model.model_name}")
                 return active_model
 
-            logger.warning("No active model found in database")
+            logger.warning("No active model found")
             return None
 
         except Exception:
@@ -163,7 +164,8 @@ def switch_active_model(
 
     with db_connect() as db:
 
-        logger.info(f"Switching active model from ID {current_active_id} to ID {new_active_id}")
+        logger.info(f"Switching active model: {current_active_id} → {new_active_id}")
+        
         try:
 
             current_active_model = (
@@ -186,7 +188,7 @@ def switch_active_model(
                 new_active_model.activated_at = datetime.now()
 
             db.commit()
-            logger.info(f"Successfully activated model ID: {new_active_id}")
+            logger.info(f"Active model switched to ID: {new_active_id}")
 
         except Exception:
             db.rollback()
@@ -198,7 +200,7 @@ def switch_active_model(
 def get_first_model() -> ModelRegistry | None:
 
     with db_connect() as db:
-        logger.info("Fetching first model record")
+        logger.info("Fetching first model")
         try:
 
             model_record = (
@@ -208,14 +210,14 @@ def get_first_model() -> ModelRegistry | None:
             )
 
             if model_record is None:
-                logger.warning("No model records found in database")
+                logger.warning("No models found")
                 return None
 
-            logger.info(f"First model record found. ID: {model_record.id}")
+            logger.info(f"First model found - ID: {model_record.id}")
             return model_record
 
         except Exception:
-            logger.exception("Failed to fetch first model record")
+            logger.exception("Failed to fetch first model")
             raise        
         
         
@@ -226,8 +228,7 @@ def activate_initial_model(
 
     with db_connect() as db:
 
-        logger.info(f"Activating initial model ID: {model_id}")
-
+        logger.info(f"Activating initial model - ID: {model_id}")
         try:
 
             model_record = (
@@ -237,16 +238,16 @@ def activate_initial_model(
             )
 
             if model_record is None:
-                logger.warning(f"No model found for ID: {model_id}")
+                logger.warning(f"Model not found - ID: {model_id}")
                 return
 
             model_record.is_active = True
             model_record.activated_at = datetime.now()
             db.commit()
-            logger.info(f"Initial model activated successfully. ID: {model_id}")
+            logger.info(f"Initial model activated - ID: {model_id}")
 
         except Exception:
             db.rollback()
-            logger.exception(f"Failed to activate initial model ID: {model_id}")
+            logger.exception(f"Failed to activate initial model - ID: {model_id}")
             raise        
         

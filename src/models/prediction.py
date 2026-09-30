@@ -40,9 +40,13 @@ def predict_default(data: dict):
         "loan_tenure_months", "emi_to_income_ratio",
         "loan_to_income_ratio", "employment_type"
     ])
-
+    
+    logger.info("Generating prediction")
+    
     prediction = model.predict(input_df)[0]
     probability = model.predict_proba(input_df)[0][1]
+    
+    logger.info("Prediction generated successfully")
 
     return {
         "default": bool(prediction == 1),

@@ -15,7 +15,7 @@ router = APIRouter(
 # Generating Drift report using Evidently
 @router.post("/report")
 def generate_report():
-    logger.info("Drift Detection requested")
+    logger.info("Drift report generation requested")
 
     try:
         result = generate_drift_report()
@@ -43,7 +43,7 @@ def generate_report():
         )
 
     except Exception:
-        logger.exception("Failed to generate drift report")
+        logger.exception("Drift report generation failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate drift report."
@@ -64,7 +64,7 @@ async def get_drift_insights():
         }
 
     except Exception as e:
-        logger.exception("Failed to generate drift insights")
+        logger.exception("Drift insights generation failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate drift insights."

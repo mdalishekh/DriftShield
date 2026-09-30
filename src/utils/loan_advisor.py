@@ -4,7 +4,6 @@ from src.utils.logs_handler import logger
 from src.models.prediction import predict_default, EMPLOYMENT_MAP
 from src.models.load_models import get_current_model
 
-# Add Exception Handler
 
     
 def risk_calculation(predicted_result: dict, payload: dict) -> dict:
@@ -32,6 +31,8 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         "employment_type"
     ]]
 
+    logger.info("Starting SHAP analysis")
+    
     explainer = shap.TreeExplainer(model)
     shap_values = explainer(input_df)
 
@@ -52,6 +53,8 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
             "value": row["value"],
             "shap_value": round(float(row["shap_value"]), 4)
         })
+        
+    logger.info("SHAP analysis completed")    
 
     return {
         "default": predicted_result["default"],
@@ -126,11 +129,11 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
         0.50
     ]
     
-    logger.info("Starting smart loan suggestion started")
+    logger.info("Evaluating safer loan options")
 
     if not predicted_result["default"]:
 
-        logger.info("Customer already falls under acceptable risk threshold")
+        logger.info("Loan amount is within the acceptable risk threshold")
         return None
 
     requested_amount = payload["loan_amount"]
@@ -156,9 +159,9 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
         probability = prediction["probability"]
 
         logger.info(
-            f"Amount={candidate_amount}, "
-            f"Tenure={current_tenure}, "
-            f"Probability={probability}"
+            f"Amount = {candidate_amount}, "
+            f"Tenure = {current_tenure}, "
+            f"Probability = {probability}"
         )
 
         if probability <= TARGET_PROBABILITY:
@@ -172,7 +175,7 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
             break
 
     if best_candidate is None:
-        logger.warning("No safe loan amount found")
+        logger.warning("No loan amount met the acceptable risk threshold")
         return None
 
 
@@ -190,6 +193,7 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
         next_tenure = 36    
 
     if next_tenure is None:
+        logger.info("Safer loan option identified")
         return best_candidate
 
     # Evaluate if longer tenure can further reduce risk
@@ -211,6 +215,6 @@ def smart_loan_suggestions(predicted_result: dict, payload: dict):
         best_candidate["suggested_tenure"] = next_tenure
         best_candidate["predicted_probability"] = improved_probability
 
-    logger.info(f"Smart suggestion generated: "f"{best_candidate}")
+    logger.info("Safer loan option identified")
 
     return best_candidate
