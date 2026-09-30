@@ -18,7 +18,7 @@ groq_client = GroqClient()
 # Generating Loan assessment
 def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
 
-    logger.info("Generating loan assessment")
+    logger.info("Generating loan assessment using LLM")
 
     # Calculate risk and positive factors
     shap_analysis_result = risk_calculation(predicted_result, payload)

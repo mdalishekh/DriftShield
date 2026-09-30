@@ -13,13 +13,14 @@ SessionLocal = sessionmaker(bind=engine)
 
 Base.metadata.create_all(bind=engine)
 
+# Somehow all content from tables are being deleted , Have to figure out
 
 @contextmanager
 def db_connect():
     db = SessionLocal()
-    logger.debug("Database session created")
+    logger.info("Database connection established")
     try:
         yield db
     finally:
         db.close()
-        logger.debug("Database session closed")
+        logger.info("Database connection closed")

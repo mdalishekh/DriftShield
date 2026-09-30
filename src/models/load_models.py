@@ -16,7 +16,7 @@ def load_model_into_memory(model_name: str) -> None:
     global CURRENT_MODEL
 
     model_path = MODELS_DIR / model_name
-    logger.info(f"Loading model - {model_name}")
+    logger.info(f"Loading model: {model_name}")
     
     if not model_path.exists():
         raise FileNotFoundError(
@@ -24,7 +24,7 @@ def load_model_into_memory(model_name: str) -> None:
         )
     CURRENT_MODEL = XGBClassifier()
     CURRENT_MODEL.load_model(model_path)    
-    logger.info("Model loaded successfully")
+    logger.info("Model loaded successfully into memory")
     
     
 
