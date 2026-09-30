@@ -23,7 +23,7 @@ def predict(data: PredictionRequest, background_tasks: BackgroundTasks):
         try:
             llm_response = generate_loan_assessment(result, payload)
         except Exception as e:
-            logger.error(f"Error generating LLM response: {e}")
+            logger.error(f"Loan assessment generation failed: {e}")
             llm_response = "Could not generate loan assessment at this time."
 
         background_tasks.add_task(

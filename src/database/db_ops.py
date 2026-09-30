@@ -8,10 +8,10 @@ from datetime import datetime
 
 # This function inserts Incoming user data in database
 def insert_prediction(payload: dict, predicted_default: bool, probability: float):
-    
+    logger.info("Inserting User Profile in DB")
     # Connecting with Database
     with db_connect() as db:
-    
+        
         record = Prediction(
             age=payload["age"],
             income=payload["income"],
@@ -30,6 +30,7 @@ def insert_prediction(payload: dict, predicted_default: bool, probability: float
         db.add(record)
         db.commit()
         db.refresh(record)
+        logger.info("User Profile inserted in DB")
     return record
 
 

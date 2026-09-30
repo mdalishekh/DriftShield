@@ -8,6 +8,7 @@ get_first_model,
 activate_initial_model
 )
 from src.models.load_models import load_model_into_memory
+from src.middleware.request_id import request_id_middleware
 from contextlib import asynccontextmanager
 from datetime import datetime
 from fastapi.staticfiles import StaticFiles
@@ -130,3 +131,5 @@ app.include_router(prediction_route.router, prefix="/api/v1")
 app.include_router(model_registry_route.router, prefix="/api/v1")
 app.include_router(drift_route.router, prefix="/api/v1")
 
+# Registering Middleware
+app.middleware("http")(request_id_middleware)
