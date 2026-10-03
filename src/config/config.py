@@ -10,6 +10,21 @@ class ENV:
     DATABASE_URL = os.getenv("DATABASE_URL")
     
 
+EXPECTED_COLUMNS = [
+    "age",
+    "income",
+    "credit_score",
+    "existing_loans",
+    "existing_loan_emi",
+    "employed",
+    "default",
+    "loan_amount",
+    "loan_tenure_months",
+    "emi_to_income_ratio",
+    "loan_to_income_ratio",
+    "employment_type"
+]
+
 EXPECTED_FEATURES = [
     "age",
     "income",

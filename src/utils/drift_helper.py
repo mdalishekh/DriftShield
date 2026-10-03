@@ -6,7 +6,7 @@ from src.database.db_ops import get_active_model
 from src.database.connection import engine
 from evidently import Report
 from evidently.presets import DataDriftPreset
-from src.config.config import EXPECTED_FEATURES
+from src.config.config import EXPECTED_COLUMNS
 
 
 def get_current_dataframe():
@@ -59,25 +59,11 @@ def generate_drift_report():
     if len(current_df) < 50:
         raise ValueError("Minimum 50 prediction records required.")
 
-    # EXPECTED_FEATURES = [
-    #     "age",
-    #     "income",
-    #     "credit_score",
-    #     "existing_loans",
-    #     "existing_loan_emi",
-    #     "employed",
-    #     "default",
-    #     "loan_amount",
-    #     "loan_tenure_months",
-    #     "emi_to_income_ratio",
-    #     "loan_to_income_ratio",
-    #     "employment_type"
-    # ]
 
-    if list(reference_df.columns) != EXPECTED_FEATURES:
+    if list(reference_df.columns) != EXPECTED_COLUMNS:
         raise ValueError("Reference CSV columns mismatch.")
 
-    if list(current_df.columns) != EXPECTED_FEATURES:
+    if list(current_df.columns) != EXPECTED_COLUMNS:
         raise ValueError("Current dataset columns mismatch.")
 
     reports_dir = project_root / "reports"
