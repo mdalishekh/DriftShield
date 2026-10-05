@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from src.api.routers import drift_route, model_registry_route, prediction_route
+from src.auths import auth
 from src.utils.logs_handler import logger
 from src.models.load_models import get_current_model
 from src.database.db_ops import (
@@ -130,6 +131,8 @@ def readiness_check():
 app.include_router(prediction_route.router, prefix="/api/v2")
 app.include_router(model_registry_route.router, prefix="/api/v2")
 app.include_router(drift_route.router, prefix="/api/v2")
+app.include_router(auth.router, prefix="/api/v2")
+
 
 # Registering Middleware
 app.middleware("http")(request_id_middleware)
