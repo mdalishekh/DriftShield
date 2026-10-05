@@ -15,3 +15,5 @@ xgboost
 evidently
 python-multipart
 shap
+bcrypt
+python-jose[cryptography]
