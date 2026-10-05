@@ -24,3 +24,12 @@ def db_connect():
     finally:
         db.close()
         logger.info("Database connection closed")
+
+def get_db():
+    db = SessionLocal()
+    logger.info("Database connection established")
+    try:
+        yield db
+    finally:
+        db.close()
+        logger.info("Database connection closed")
