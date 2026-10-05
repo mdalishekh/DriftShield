@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import (
     APIRouter,
     UploadFile,
+    Depends,
     File,
     HTTPException,
     status
@@ -22,6 +23,10 @@ from src.database.db_ops import (
 from src.models.load_models import load_model_into_memory
 from src.utils.logs_handler import logger
 from src.models.validate_models import validate_model_artifacts
+from src.auths.dependencies import get_current_user
+from src.database.models import User
+
+
 
 router = APIRouter(
     prefix="/models",
@@ -36,7 +41,8 @@ router = APIRouter(
 async def upload_models(
     model_file: UploadFile = File(...),
     metrics_file: UploadFile = File(...),
-    reference_csv: UploadFile = File(...)
+    reference_csv: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
 ):
     try:
         # Validate filenames
@@ -184,7 +190,9 @@ async def upload_models(
         
 # Activating any specific Model - API     
 @router.put("/activate/{model_id}")
-def activate_model(model_id: int):
+def activate_model(model_id: int, 
+    current_user: User = Depends(get_current_user)
+):
 
     logger.info(f"Activation request received for model ID: {model_id}")
 
@@ -275,7 +283,9 @@ def get_models():
 
 # Deleting any specific Model - API
 @router.delete("/delete/{model_id}")
-def delete_model(model_id: int):
+def delete_model(model_id: int,
+    current_user: User = Depends(get_current_user)
+):
 
     logger.info(f"Delete request received for model ID: {model_id}")
 
