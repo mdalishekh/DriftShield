@@ -1,6 +1,6 @@
 # src/database/db_ops.py
 from sqlalchemy.orm import Session
-from src.database.models import Prediction, ModelRegistry
+from src.database.db_models import Prediction, ModelRegistry
 from src.database.connection import db_connect
 from src.utils.logs_handler import logger
 from datetime import datetime
@@ -58,7 +58,6 @@ def insert_model_metadata(**kwargs)-> ModelRegistry:
             raise
         
         
-
 # This functions fetch record corresponding to the provided Row ID
 def get_model_by_id(model_id: int) -> ModelRegistry | None:
 
@@ -84,7 +83,6 @@ def get_model_by_id(model_id: int) -> ModelRegistry | None:
             raise        
         
 
-
 # This function extract all models record from database 
 def get_all_models() -> list[ModelRegistry]:
 
@@ -100,7 +98,6 @@ def get_all_models() -> list[ModelRegistry]:
             raise        
         
         
-
 def delete_model_record(model_id: int) -> bool:
 
     with db_connect() as db:
@@ -129,7 +126,7 @@ def delete_model_record(model_id: int) -> bool:
             raise       
         
         
-
+        
 def get_active_model() -> ModelRegistry | None:
 
     with db_connect() as db:
@@ -154,7 +151,6 @@ def get_active_model() -> ModelRegistry | None:
             raise        
         
         
-
 
 def switch_active_model(
     current_active_id: int,

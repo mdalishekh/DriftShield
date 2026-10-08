@@ -1,5 +1,3 @@
-# New Models are expected to be uploaded
-
 from pathlib import Path
 from fastapi import (
     APIRouter,
@@ -24,17 +22,15 @@ from src.models.load_models import load_model_into_memory
 from src.utils.logs_handler import logger
 from src.models.validate_models import validate_model_artifacts
 from src.auths.dependencies import get_current_user
-from src.database.models import User
+from src.database.db_models import User
 
 
-
+# Router for Model Registry
 router = APIRouter(
     prefix="/models",
     tags=["Model Registry"]
 )
 
-
-# Exception handling and status code to be added very soon
 
 # Uploading New Models into the application - API
 @router.post("/upload")

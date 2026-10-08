@@ -41,7 +41,9 @@ def predict_default(data: dict):
         "loan_to_income_ratio", "employment_type"
     ])
 
+    # Making actual Prediction
     prediction = model.predict(input_df)[0]
+    # Getting Prediction Probability in (percentage)
     probability = model.predict_proba(input_df)[0][1]
 
     return {

@@ -4,15 +4,19 @@ from src.auths.password import verify_password
 from src.auths.jwt_auth import create_access_token
 from src.auths.schemas import LoginRequest, TokenResponse
 from src.database.connection import get_db
-from src.database.models import User
+from src.database.db_models import User
 
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+# Router for Login
+router = APIRouter(
+    prefix="/auth", 
+    tags=["Authentication"]
+)
 
 
 @router.post("/login", response_model=TokenResponse)
 def login(credentials: LoginRequest, db: Session = Depends(get_db)):
-    print("logging in")
+    
     user = db.query(User).filter(
         (User.email == credentials.login_id) |
         (User.username == credentials.login_id)

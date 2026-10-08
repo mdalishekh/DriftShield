@@ -8,7 +8,7 @@ from src.llm.prompts import (
     build_drift_prompt, 
     DRIFT_CONTEXT,
     LOAN_ADVISOR_CONTEXT
-    )
+)
 from src.utils.loan_advisor import smart_loan_suggestions
 from src.llm.groq_client import GroqClient
 from src.utils.drift_helper import parse_drift_metrics
@@ -20,7 +20,7 @@ def generate_loan_assessment(predicted_result: dict, payload: dict) -> str:
 
     logger.info("Generating loan assessment using LLM")
 
-    # Calculate risk and positive factors
+    # Calculate risk and positive factors using SHAP
     shap_analysis_result = risk_calculation(predicted_result, payload)
     shap_result = format_shap_analysis(shap_analysis_result["shap_analysis"])
     

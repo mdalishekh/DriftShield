@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
+from jose import jwt
+from config.config import ENV
 
 
-SECRET_KEY = "jScMrM0w4wq79ICr2kklmx52NJkL435UyvJEgYwAwOs"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -17,8 +17,8 @@ def create_access_token(user_id: int) -> str:
         "exp": expire
     }
 
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, ENV.JWT_SECRET_KEY, algorithm=ALGORITHM)
 
 
 def decode_access_token(token: str) -> dict:
-    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    return jwt.decode(token, ENV.JWT_SECRET_KEY, algorithms=[ALGORITHM])

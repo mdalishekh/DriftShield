@@ -25,15 +25,12 @@ formatter = logging.Formatter(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-
 # Logger
 logger = logging.getLogger("DriftShield")
 logger.setLevel(logging.DEBUG)
 
-
 # Prevent duplicate handlers
 logger.handlers.clear()
-
 
 # Console handler
 console_handler = logging.StreamHandler(sys.stdout)

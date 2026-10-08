@@ -2,7 +2,7 @@ import uuid
 from fastapi import Request
 from src.utils.request_context import request_id_context
 
-
+# Request ID for loggers
 async def request_id_middleware(request: Request, call_next):
 
     request_id = uuid.uuid4().hex[:8]

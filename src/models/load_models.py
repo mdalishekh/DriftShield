@@ -1,4 +1,3 @@
-# New Models will be trained and deployed 
 from xgboost import XGBClassifier
 from pathlib import Path
 from src.utils.logs_handler import logger

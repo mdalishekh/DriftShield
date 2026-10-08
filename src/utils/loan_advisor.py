@@ -4,9 +4,8 @@ from src.utils.logs_handler import logger
 from src.models.prediction import predict_default, EMPLOYMENT_MAP
 from src.models.load_models import get_current_model
 
-# Add Exception Handler
 
-    
+# Performing Risk calculation from userdata using SHAP
 def risk_calculation(predicted_result: dict, payload: dict) -> dict:
     model = get_current_model()
 
@@ -58,6 +57,7 @@ def risk_calculation(predicted_result: dict, payload: dict) -> dict:
         "probability": predicted_result["probability"],
         "shap_analysis": shap_analysis
     }    
+    
     
     
 def format_shap_analysis(shap_analysis: list[dict]) -> str:

@@ -7,6 +7,8 @@ from src.utils.logs_handler import logger
 from src.utils.drift_helper import generate_drift_report
 from src.llm.llm_services import generate_drift_insights
 
+
+# Router for Drift Report
 router = APIRouter(
     prefix="/drift",
     tags=["Drift Detection"]

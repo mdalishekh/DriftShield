@@ -1,5 +1,3 @@
-# src/database/models.py
-
 from sqlalchemy import Column, Integer, Float, String, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 from datetime import datetime

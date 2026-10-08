@@ -7,7 +7,11 @@ from src.llm.llm_services import generate_loan_assessment
 from src.utils.loan_advisor import ratio_calculation
 
 
-router = APIRouter(prefix="/prediction", tags=["Predictions"])
+# Router for Prediction
+router = APIRouter(
+    prefix="/prediction", 
+    tags=["Predictions"]
+)
 
 
 @router.post("/", response_model=PredictionResponse)
@@ -16,8 +20,9 @@ def predict(data: PredictionRequest, background_tasks: BackgroundTasks):
         logger.info("Prediction request received")
 
         input_data: dict = data.model_dump()
-        payload: dict = ratio_calculation(input_data)
+        payload: dict = ratio_calculation(input_data) # Income & EMI ration calculation
 
+        # Predictiong default using ML Model
         result = predict_default(payload)
 
         try:
@@ -26,6 +31,7 @@ def predict(data: PredictionRequest, background_tasks: BackgroundTasks):
             logger.error(f"Loan assessment generation failed: {e}")
             llm_response = "Could not generate loan assessment at this time."
 
+        # Inserting user profile data in database in background
         background_tasks.add_task(
             insert_prediction,
             payload.copy(),
@@ -40,7 +46,7 @@ def predict(data: PredictionRequest, background_tasks: BackgroundTasks):
 
         return PredictionResponse(
             status="success",
-            prediction=prediction, # type: ignore
+            prediction=prediction,
             llm_response=llm_response
         )
 
