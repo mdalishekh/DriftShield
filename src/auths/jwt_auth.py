@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from jose import jwt
-from config.config import ENV
+from src.config.config import ENV
 
 
 ALGORITHM = "HS256"
