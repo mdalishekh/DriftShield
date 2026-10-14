@@ -33,10 +33,8 @@ driftshield/
 │    └── train_V2_metrics.json
 │
 ├── models/                       # Mounted with AWS EBS Volume
-│    └── xgboost_V1_model.pkl
-│    └── xgboost_V2_model.pkl
-│    └── xgboost_V1_scaler.pkl
-│    └── xgboost_V2_scaler.pkl
+│    └── xgboost_V1_model.json
+│    └── xgboost_V2_model.json
 │
 ├── reports/                      # Mounted with AWS EBS Volume
 │    └── drift_report.html        # Generated from Evidently AI
@@ -57,6 +55,13 @@ driftshield/
 │ 	│ 	├── schemas/ 		     # Pydantic Model Schema
 │   │ 	│ 	 └── __init__.py
 │ 	│ 	│    └── schemas.py
+│ 	│ 	│
+│ 	│ 	├── auths/ 		     # JWT & Password authentication              
+│   │ 	│ 	 └── auth.py     # Login API
+│ 	│ 	│    └── dependencies.py
+│   │ 	│ 	 └── jwt_auth.py
+│ 	│ 	│    └── password.py
+│ 	│ 	│    └── schemas.py
 │ 	│
 │ 	├── config/
 │ 	│ 	 └── config.py
@@ -72,15 +77,22 @@ driftshield/
 │ 	│  	 └── llm_services.py
 │ 	│ 	 └── prompts.py
 │ 	│
-│ 	├── models/ 			   # Loading models & use into application
+│ 	├── middleware/
+│ 	│ 	 └── __init__.py
+│ 	│ 	 └── request_id.py       # Co-Relation/Request Id for logs
+│ 	│
+│ 	├── models/ 			     # Loading models & use into application
 │ 	│ 	 └── evaluate.py
-│ 	│  	 └── load_models.py    # Loading models from AWS EBS Volume
-│ 	│ 	 └── prediction.py 	   # Making prediction
+│ 	│  	 └── load_models.py      # Loading models from AWS EBS Volume
+│ 	│ 	 └── prediction.py 	     # Making prediction
+│ 	│ 	 └── validate_models.py  # Validates new models before deploying  
 │ 	│
 │ 	├── utils/ 				   # Utility files for application
 │ 	│ 	 └── drift_helper.py   # Helper file for generating Data drift
 │ 	│ 	 └── loan_advisor.py   # Smart loan suggestion and risk calculation
 │ 	│    └── logs_handler.py
+│ 	│    └── request_context.py # Handles logs with Co-relation ID
+│
 │
 ├── app.py    	# FastAPI main controller & All APIRouters registered here
 ├── Dockerfile
@@ -102,7 +114,7 @@ driftshield/
 
 | Directory | Purpose |
 |------------|----------|
-| models/ | Store trained models and scalers |
+| models/ | Store trained models |
 | reports/ | Store generated Evidently reports |
 | metrics/ | Store drift and training metrics |
 | logs/ | Store Application logs |
@@ -140,34 +152,31 @@ Each new model version must include the following artifacts:
 
 | Artifact | Naming Convention |
 |-----------|------------------|
-| Model File | `<version>_model.pkl` |
-| Scaler File | `<version>_scaler.pkl` |
-| Reference Dataset | `<version>_reference.csv` |
+| Model File | `<version>_model.josn` |
 | Training Metrics | `<version>_metrics.json` |
+| Reference Dataset | `<version>_reference.csv` |
+
 
   
 Example:
 
--  `xgboost_V1_model.pkl`
-
--  `xgboost_V1_scaler.pkl`
-
--  `train_V1_reference.csv`
+-  `xgboost_V1_model.json`
 
 -  `train_V1_metrics.json`
 
+-  `train_V1_reference.csv`
+
+
 or
 
--  `xgboost_V2_model.pkl`
-
--  `xgboost_V2_scaler.pkl`
-
--  `train_V2_reference.csv`
+-  `xgboost_V2_model.json`
 
 -  `train_V2_metrics.json`
 
+-  `train_V2_reference.csv`
+
   
 
->  **Important:** All four artifacts must be uploaded together during every model upgrade. The application validates file naming conventions to ensure version consistency and prevent accidental deployment of mismatched model artifacts.
+>  **Important:** All `Three` artifacts must be uploaded together during every model upgrade. The application validates file naming conventions to ensure version consistency and prevent accidental deployment of mismatched model artifacts.
 
 > **New Models are likely to added soon**
