@@ -121,12 +121,11 @@ DriftShield continuously monitors production prediction data by comparing it wit
 
 Monitoring a machine learning model is only one part of maintaining a production ML system. Once model degradation is identified, organizations must be able to deploy improved model versions in a controlled manner while ensuring continuous service availability and minimizing operational risks.
 
-DriftShield addresses this challenge through a centralized **Model Registry**, which manages the complete lifecycle of deployed machine learning models. Instead of manually replacing model files or modifying application code, new model versions are registered together with their required deployment artifacts, including the trained model, feature scaler, evaluation metrics, and reference dataset.
+DriftShield addresses this challenge through a centralized **Model Registry**, which manages the complete lifecycle of deployed machine learning models. Instead of manually replacing model files or modifying application code, new model versions are registered together with their required deployment artifacts, including the trained model in native XGBoost JSON format, evaluation metrics, and reference dataset.
 
-Once validated, these artifacts are stored in persistent storage and recorded within the Model Registry. Administrators can then activate any registered model through the application interface, allowing the backend to dynamically load the selected model into memory. From that point onward, all future prediction requests and drift detection operations automatically utilize the newly activated model without requiring application downtime or backend redeployment.
+Once validated, these artifacts are stored in persistent storage and recorded within the Model Registry. Authenticated users can then activate any registered model through the application interface, allowing the backend to dynamically load the selected model into memory. From that point onward, prediction requests and drift detection operations use the newly activated model and its associated reference dataset without requiring application code changes or backend redeployment.
 
-This approach separates model lifecycle management from application logic, enabling safe model versioning, simplified deployment, and a production-ready workflow for continuously improving machine learning systems.
-
+**This approach separates model lifecycle management from application logic, enabling safe model versioning, simplified deployement, and a controlled workflow for continuously improving Machine Learning Systems.**
 ---
 
 ## Architecture
@@ -138,19 +137,19 @@ This approach separates model lifecycle management from application logic, enabl
 
 ## Workflow Summary
 
-1.  The user uploads a new model package from the Streamlit Model Registry interface.
-2.  Three required artifacts are submitted:
-    -   Trained Model (`*_model.json`)
-    -   Model Metrics (`*_metrics.json`)
-    -   Reference Dataset (`*_reference.csv`)
-3.  The backend validates filenames, artifact types, and deployment requirements.
-4.  Model artifacts are stored in persistent AWS EBS storage.
-5.  Model metadata is recorded inside the PostgreSQL Model Registry.
-6.  The dashboard displays all available model versions.
-7.  The administrator activates the desired model version.
-8.  The backend hot-loads the selected model into memory.
-9.  All subsequent prediction requests automatically use the newly activated model.
-10.  Future drift reports also use the corresponding reference dataset and model artifacts associated with the active deployment.
+1. The user uploads a new model package from the Streamlit Model Registry interface.
+2. Three required artifacts are submitted:
+   - Trained Model (`*_model.json`)
+   - Model Metrics (`*_metrics.json`)
+   - Reference Dataset (`*_reference.csv`)
+3. The backend validates filenames, artifact types, and deployment requirements.
+4. Model artifacts are stored in persistent AWS EBS storage.
+5. Model metadata is recorded inside the PostgreSQL Model Registry.
+6. The dashboard displays all available model versions.
+7. The authenticated user activates the desired model version.
+8. The backend hot-loads the selected model into memory.
+9. All subsequent prediction requests automatically use the newly activated model.
+10. Future drift reports also use the corresponding reference dataset and model artifacts associated with the active deployment.
 
 
 ---
